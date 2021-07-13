@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "682603864259",
+    "project_id": "kilifi-county-ba077",
+    "storage_bucket": "kilifi-county-ba077.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:682603864259:android:6ad062a7e8e6aa8e94c276",
+        "android_client_info": {
+          "package_name": "com.example.kilifi_county"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "682603864259-3bb3us2slt4ckiob8uac9ijmi1a23d8f.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB35n362zDwqY53Gflwg8VHO4wHYKroKxI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "682603864259-3bb3us2slt4ckiob8uac9ijmi1a23d8f.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
