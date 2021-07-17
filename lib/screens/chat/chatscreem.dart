@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:kilifi_county/constants.dart';
 import 'package:kilifi_county/screens/chat/widgets/chat_network.dart';
-import 'package:kilifi_county/screens/chat/widgets/chatscreen_tile.dart';
 
 class ChatScreen extends StatelessWidget {
   static const routeName = '/chatscreen';

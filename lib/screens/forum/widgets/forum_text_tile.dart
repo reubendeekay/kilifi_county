@@ -21,7 +21,7 @@ class ForumTextTile extends StatelessWidget {
           Row(
             children: [
               CircleAvatar(
-                radius: 15,
+                radius: 18,
                 backgroundImage: NetworkImage(post.user.imageUrl),
               ),
               SizedBox(
@@ -61,6 +61,9 @@ class ForumTextTile extends StatelessWidget {
                 ),
               )
             ],
+          ),
+          SizedBox(
+            height: 5,
           ),
           Container(
             margin: EdgeInsets.only(left: 10),

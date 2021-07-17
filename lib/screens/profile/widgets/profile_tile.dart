@@ -1,26 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:kilifi_county/constants.dart';
 import 'package:kilifi_county/providers/dark_mode_provider.dart';
-import 'package:kilifi_county/screens/profile/account_details_screen.dart';
+import 'package:kilifi_county/screens/profile/widgets/account_details_screen.dart';
 import 'package:provider/provider.dart';
 
 class ProfileTile extends StatelessWidget {
+  final String title;
+  final String description;
+  final Function function;
+  ProfileTile({this.title, this.description, this.function});
   @override
   Widget build(BuildContext context) {
     return Container(
-        margin: EdgeInsets.fromLTRB(15, 0, 15, 10),
-        width: double.infinity,
-        child: Card(
+      margin: EdgeInsets.fromLTRB(15, 0, 15, 10),
+      width: double.infinity,
+      child: Card(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
           child: ListTile(
             leading: Icon(Icons.person),
             title: Text(
-              'Account',
+              title == null ? 'Profile' : title,
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             subtitle: Text(
-              'Edit details,link accounts...',
+              description == null
+                  ? 'Edit details,link accounts...'
+                  : description,
               style: TextStyle(fontSize: 12),
             ),
             trailing: Icon(
@@ -30,11 +36,10 @@ class ProfileTile extends StatelessWidget {
             ),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            onTap: () =>
-                Navigator.of(context).pushNamed(AccountDetailsScreen.routeName),
+            onTap: function != null ? function : null,
             dense: true,
-          ),
-        ));
+          )),
+    );
   }
 }
 
@@ -59,10 +64,15 @@ class _ProfileSwitchTileState extends State<ProfileSwitchTile> {
               'Dark mode',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
-            subtitle: Text(
-              'Toggle between dark mode and light mode',
-              style: TextStyle(fontSize: 12),
-            ),
+            subtitle: dark.darkTheme
+                ? Text(
+                    'Toggle to light mode',
+                    style: TextStyle(fontSize: 12),
+                  )
+                : Text(
+                    'Toggle to dark mode',
+                    style: TextStyle(fontSize: 12),
+                  ),
             trailing: Switch(
                 activeColor: kPrimary,
                 value: dark.darkTheme,

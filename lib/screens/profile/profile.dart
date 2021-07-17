@@ -2,7 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kilifi_county/constants.dart';
 import 'package:kilifi_county/providers/user_provider.dart';
-import 'package:kilifi_county/screens/profile/profile_tile.dart';
+import 'package:kilifi_county/screens/profile/widgets/account_details_screen.dart';
+import 'package:kilifi_county/screens/profile/widgets/profile_tile.dart';
 import 'package:provider/provider.dart';
 
 class UserProfileScreen extends StatelessWidget {
@@ -10,11 +11,13 @@ class UserProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<UsersProvider>(context).user;
+
     return Scaffold(
       body: SafeArea(
         child: ListView(
           children: [
-            TopBar(),
+            TopBar(user),
             Container(
               margin: EdgeInsets.symmetric(
                 horizontal: 20,
@@ -35,9 +38,15 @@ class UserProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
+            ProfileTile(
+              function: () => Navigator.of(context)
+                  .pushNamed(AccountDetailsScreen.routeName, arguments: user),
+            ),
             ProfileTile(),
-            ProfileTile(),
-            ProfileTile(),
+            ProfileTile(
+              title: 'Appointments',
+              description: 'View requested appointments',
+            ),
             Container(
               margin: EdgeInsets.symmetric(
                 horizontal: 20,
@@ -59,7 +68,10 @@ class UserProfileScreen extends StatelessWidget {
               ),
             ),
             ProfileSwitchTile(),
-            ProfileTile(),
+            ProfileTile(
+              title: 'Saved Posts',
+              description: 'View all your saved posts',
+            ),
             ProfileTile(),
             Container(
               margin: EdgeInsets.symmetric(
@@ -82,7 +94,10 @@ class UserProfileScreen extends StatelessWidget {
               ),
             ),
             ProfileTile(),
-            ProfileTile(),
+            ProfileTile(
+              title: 'Need Help? Contact us',
+              description: 'Get in touch with customer care',
+            ),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 15),
               child: Card(
@@ -110,9 +125,10 @@ class UserProfileScreen extends StatelessWidget {
 
 //Top Bar
 class TopBar extends StatelessWidget {
+  final UserModel user;
+  TopBar(this.user);
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UsersProvider>(context).user;
     return Container(
       height: 200,
       child: ShaderMask(

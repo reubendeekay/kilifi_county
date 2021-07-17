@@ -15,8 +15,6 @@ class ForumPictureTile extends StatefulWidget {
 }
 
 class _ForumPictureTileState extends State<ForumPictureTile> {
-  var _isLiked = false;
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -35,7 +33,7 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
           Row(
             children: [
               CircleAvatar(
-                radius: 15,
+                radius: 18,
                 backgroundImage: NetworkImage(widget.post.user.imageUrl),
               ),
               SizedBox(

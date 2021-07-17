@@ -1,6 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:kilifi_county/constants.dart';
 import 'package:kilifi_county/providers/user_provider.dart';
+import 'package:kilifi_county/screens/services/about_us.dart';
+import 'package:kilifi_county/screens/services/appointments_screen.dart';
+import 'package:kilifi_county/screens/services/consultation_screen.dart';
+import 'package:kilifi_county/screens/services/gallery_screen.dart';
+import 'package:kilifi_county/screens/services/job_oppportunities_screen.dart';
 import 'package:provider/provider.dart';
 
 class ServicesScreen extends StatelessWidget {
@@ -62,6 +67,8 @@ class ServicesScreen extends StatelessWidget {
                   ServiceTile(
                     color: Colors.amber[200],
                     title: 'Appointments',
+                    function: () => Navigator.of(context)
+                        .pushNamed(AppointmentsScreen.routeName),
                   ),
                   ServiceTile(
                       color: Colors.teal[200], title: 'E-Citizen \nServices'),
@@ -72,10 +79,22 @@ class ServicesScreen extends StatelessWidget {
                   ServiceTile(
                     color: Colors.red[200],
                     title: 'Job/Intern Opportunities',
+                    function: () => Navigator.of(context)
+                        .pushNamed(JobOpportunitiesScreen.routeName),
                   ),
                   ServiceTile(
-                    color: Colors.cyan[200],
-                  ),
+                      color: Colors.cyan[200],
+                      function: () async {
+                        await FirebaseFirestore.instance
+                            .collection('interactions')
+                            .doc('consultation')
+                            .collection(user.userId)
+                            .doc()
+                            .set({'sessionAt': Timestamp.now()});
+                        Navigator.of(context).pushNamed(
+                            ConsultationScreen.routeName,
+                            arguments: user);
+                      }),
                   ServiceTile(
                     color: Colors.brown[200],
                     title: 'Projects',
@@ -83,10 +102,14 @@ class ServicesScreen extends StatelessWidget {
                   ServiceTile(
                     color: Colors.green[200],
                     title: 'Gallery',
+                    function: () => Navigator.of(context)
+                        .pushNamed(GalleryScreen.routeName),
                   ),
                   ServiceTile(
                     color: Colors.blueGrey[200],
                     title: 'About Us',
+                    function: () =>
+                        Navigator.of(context).pushNamed(AboutUs.routeName),
                   ),
                 ],
               ),
@@ -101,20 +124,25 @@ class ServicesScreen extends StatelessWidget {
 class ServiceTile extends StatelessWidget {
   final Color color;
   final String title;
+  final Function function;
 
-  ServiceTile({this.color, this.title});
+  ServiceTile({this.color, this.title, this.function});
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Card(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-        color: color,
-        child: Center(
-            child: Text(
-          title != null ? title : 'Consultation',
-          textAlign: TextAlign.center,
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-        )),
+    return GestureDetector(
+      onTap: function,
+      child: Container(
+        child: Card(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          color: color,
+          child: Center(
+              child: Text(
+            title != null ? title : 'Consultation',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          )),
+        ),
       ),
     );
   }

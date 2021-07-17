@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kilifi_county/constants.dart';
 import 'package:kilifi_county/models/post_models.dart';
 import 'package:kilifi_county/providers/dark_mode_provider.dart';
 import 'package:kilifi_county/providers/post_provider.dart';
 import 'package:kilifi_county/providers/user_provider.dart';
-import 'package:kilifi_county/screens/forum/widgets/comment_tile.dart';
 import 'package:kilifi_county/widgets/netwok_items.dart';
 import 'package:provider/provider.dart';
 

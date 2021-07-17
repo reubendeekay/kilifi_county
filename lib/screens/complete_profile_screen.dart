@@ -6,8 +6,6 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kilifi_county/constants.dart';
-import 'package:kilifi_county/providers/user_provider.dart';
-import 'package:provider/provider.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
   static const routeName = '/complete-profile';

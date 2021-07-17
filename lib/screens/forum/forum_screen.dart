@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kilifi_county/screens/forum/forum_search_screen.dart';
 
 import 'package:kilifi_county/widgets/netwok_items.dart';
 import 'package:scroll_app_bar/scroll_app_bar.dart';
@@ -14,6 +15,15 @@ class Forum extends StatelessWidget {
           'Kilifi County Forum',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        actions: [
+          IconButton(
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(ForumSearchScreen.routeName),
+              icon: Icon(Icons.search)),
+          SizedBox(
+            width: 10,
+          )
+        ],
       ),
       body: Snap(
         controller: _appBarController.appBar,
