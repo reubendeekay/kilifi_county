@@ -5,6 +5,24 @@
         android:name="android.permission.ACCESS_MEDIA_LOCATION"
         tools:node="remove"
         /> -->
+          <uses-permission android:name="android.permission.USE_FINGERPRINT"/>
+        <queries>
+  <!-- If your app opens https URLs -->
+  <intent>
+    <action android:name="android.intent.action.VIEW" />
+    <data android:scheme="https" />
+  </intent>
+  <!-- If your app makes calls -->
+  <intent>
+    <action android:name="android.intent.action.DIAL" />
+    <data android:scheme="tel" />
+  </intent>
+  <!-- If your app emails -->
+  <intent>
+    <action android:name="android.intent.action.SEND" />
+    <data android:mimeType="*/*" />
+  </intent>
+</queries>
    <application
         android:label="kilifi_county"
         android:icon="@mipmap/ic_launcher">

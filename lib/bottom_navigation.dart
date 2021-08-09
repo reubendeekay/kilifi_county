@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kilifi_county/constants.dart';
-import 'package:kilifi_county/screens/home.dart';
+import 'package:kilifi_county/screens/home/home.dart';
 import 'package:kilifi_county/screens/profile/profile.dart';
 import 'package:kilifi_county/screens/services/services_screen.dart';
 import 'package:kilifi_county/screens/forum/widgets/floating_button.dart';

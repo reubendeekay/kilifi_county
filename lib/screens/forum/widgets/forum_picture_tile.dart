@@ -5,6 +5,7 @@ import 'package:kilifi_county/providers/dark_mode_provider.dart';
 import 'package:kilifi_county/providers/post_provider.dart';
 import 'package:kilifi_county/screens/forum/comments_screen.dart';
 import 'package:kilifi_county/widgets/small%20widgets/like_widget.dart';
+import 'package:kilifi_county/widgets/small%20widgets/save_post_widget.dart';
 import 'package:provider/provider.dart';
 
 class ForumPictureTile extends StatefulWidget {
@@ -84,7 +85,7 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
             margin: EdgeInsets.only(top: 5, left: 2),
             width: double.infinity,
             child: Card(
-              elevation: 5,
+              elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15),
               ),
@@ -120,12 +121,10 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
                       size: 22,
                     )),
                 Spacer(),
-                IconButton(
-                    onPressed: () {},
-                    icon: FaIcon(
-                      FontAwesomeIcons.bell,
-                      size: 22,
-                    ))
+                SavePostWidget(
+                  post: widget.post,
+                  size: 22,
+                )
               ],
             ),
           ),
@@ -215,25 +214,29 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
                 ],
               ),
             ),
-          Container(
-            clipBehavior: Clip.hardEdge,
-            decoration: BoxDecoration(shape: BoxShape.rectangle),
-            margin: EdgeInsets.only(left: 10),
-            width: double.infinity,
-            child: RichText(
-                text: TextSpan(
-                    text: '${widget.post.user.username} ',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: dark.darkTheme ? Colors.white : Colors.black),
-                    children: <TextSpan>[
-                  TextSpan(
-                    text: widget.post.description,
-                    style: TextStyle(
-                        color: dark.darkTheme ? Colors.white : Colors.black,
-                        fontWeight: FontWeight.w400),
-                  )
-                ])),
+          GestureDetector(
+            onTap: () => Navigator.of(context)
+                .pushNamed(CommentsScreen.routeName, arguments: widget.post),
+            child: Container(
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(shape: BoxShape.rectangle),
+              margin: EdgeInsets.only(left: 10),
+              width: double.infinity,
+              child: RichText(
+                  text: TextSpan(
+                      text: '${widget.post.user.username} ',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: dark.darkTheme ? Colors.white : Colors.black),
+                      children: <TextSpan>[
+                    TextSpan(
+                      text: widget.post.description,
+                      style: TextStyle(
+                          color: dark.darkTheme ? Colors.white : Colors.black,
+                          fontWeight: FontWeight.w400),
+                    )
+                  ])),
+            ),
           ),
           SizedBox(
             height: 3,

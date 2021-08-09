@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:kilifi_county/providers/user_provider.dart';
+import 'package:kilifi_county/screens/profile/verification_screen.dart';
 
 class AccountDetailsScreen extends StatefulWidget {
   static const routeName = '/account-details';
@@ -50,13 +52,19 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               profileTile('${user.phoneNumber}', 'Phone number', phoneNumber),
               profileTile('${user.subCounty}', 'Sub County', location),
               GestureDetector(
-                onTap: () {},
+                onTap: () async {
+                  await FirebaseAuth.instance
+                      .sendPasswordResetEmail(email: email);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text(
+                          'An email with the password reset request has been sent')));
+                },
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 15),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Password'),
+                      Text('Reset Password'),
                       SizedBox(
                         height: 10,
                       ),
@@ -71,7 +79,10 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                 height: 10,
               ),
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.of(context)
+                      .pushNamed(VerificationScreen.routeName, arguments: user);
+                },
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 15),
                   child: Column(

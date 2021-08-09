@@ -5,27 +5,37 @@ import 'package:flutter/material.dart';
 import 'package:kilifi_county/providers/dark_mode_provider.dart';
 import 'package:kilifi_county/providers/post_provider.dart';
 import 'package:kilifi_county/providers/user_provider.dart';
-import 'package:kilifi_county/screens/add_post_screen.dart';
-import 'package:kilifi_county/screens/auth_screen.dart';
-import 'package:kilifi_county/screens/bottom_navigation.dart';
+import 'package:kilifi_county/screens/forum/add_post_screen.dart';
+import 'package:kilifi_county/screens/custom%20gallery/custom_gallery.dart';
+import 'package:kilifi_county/screens/home/auth_screen.dart';
+import 'package:kilifi_county/bottom_navigation.dart';
 import 'package:kilifi_county/screens/chat/chatrooms.dart';
-import 'package:kilifi_county/screens/chat/chatscreem.dart';
-import 'package:kilifi_county/screens/complete_profile_screen.dart';
+import 'package:kilifi_county/screens/chat/chatscreen.dart';
+import 'package:kilifi_county/screens/home/complete_profile_screen.dart';
 import 'package:kilifi_county/screens/forum/comments_screen.dart';
 import 'package:kilifi_county/screens/forum/forum_search_screen.dart';
 
 import 'package:kilifi_county/screens/forum/widgets/floating_button.dart';
-import 'package:kilifi_county/screens/news_details.dart';
+import 'package:kilifi_county/screens/home/news_details.dart';
+import 'package:kilifi_county/screens/home/password_reset_screen.dart';
+import 'package:kilifi_county/screens/profile/connect_with_screen.dart';
+import 'package:kilifi_county/screens/profile/saved_post_screen.dart';
+
+import 'package:kilifi_county/screens/profile/user_appointments.dart';
+import 'package:kilifi_county/screens/profile/verification_screen.dart';
 import 'package:kilifi_county/screens/profile/widgets/account_details_screen.dart';
-import 'package:kilifi_county/screens/services/about_us.dart';
+
 import 'package:kilifi_county/screens/services/appointment_status_screen.dart';
 import 'package:kilifi_county/screens/services/appointments_screen.dart';
 import 'package:kilifi_county/screens/services/consultation_screen.dart';
+import 'package:kilifi_county/screens/services/e_citizen_screen.dart';
 import 'package:kilifi_county/screens/services/gallery_screen.dart';
 import 'package:kilifi_county/screens/services/job_details_screen.dart';
 import 'package:kilifi_county/screens/services/job_oppportunities_screen.dart';
+import 'package:kilifi_county/screens/services/resource_center.dart/resource_center_screen.dart';
 import 'package:kilifi_county/screens/services/services_screen.dart';
-import 'package:kilifi_county/widgets/media_grid.dart';
+import 'package:kilifi_county/widgets/stories.dart';
+
 import 'package:provider/provider.dart';
 
 void main() async {
@@ -75,12 +85,12 @@ class _MyAppState extends State<MyApp> {
               );
             },
             theme: Styles.themeData(themeChangeProvider.darkTheme, context),
-            // home: StreamBuilder(
-            //   stream: FirebaseAuth.instance.authStateChanges(),
-            //   builder: (ctx, snapshot) =>
-            //       snapshot.hasData ? MyNav() : AuthScreen(),
-            // ),
-            home: AboutUs(),
+            home: StreamBuilder(
+              stream: FirebaseAuth.instance.authStateChanges(),
+              builder: (ctx, snapshot) =>
+                  snapshot.hasData ? MyNav() : AuthScreen(),
+            ),
+            // home: Gallery(),
             routes: {
               NewsDetailsScreen.routeName: (ctx) => NewsDetailsScreen(),
               ServicesScreen.routeName: (ctx) => ServicesScreen(),
@@ -101,7 +111,14 @@ class _MyAppState extends State<MyApp> {
                   JobOpportunitiesScreen(),
               JobDetailsScreen.routeName: (ctx) => JobDetailsScreen(),
               GalleryScreen.routeName: (ctx) => GalleryScreen(),
-              AboutUs.routeName: (ctx) => AboutUs(),
+              ECitizenScreen.routeName: (ctx) => ECitizenScreen(),
+              ResourceCenterScreen.routeName: (ctx) => ResourceCenterScreen(),
+              VerificationScreen.routeName: (ctx) => VerificationScreen(),
+              ConnectScreen.routeName: (ctx) => ConnectScreen(),
+              UserAppointments.routeName: (ctx) => UserAppointments(),
+              SavedPostScreen.routeName: (ctx) => SavedPostScreen(),
+              PasswordResetScreen.routeName: (ctx) => PasswordResetScreen(),
+              StoriesPage.routeName: (ctx) => StoriesPage(),
             },
           );
         }));

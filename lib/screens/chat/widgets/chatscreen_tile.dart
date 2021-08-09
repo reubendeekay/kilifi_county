@@ -17,19 +17,41 @@ class ChatscreenTile extends StatelessWidget {
       children: [
         Container(
           margin: EdgeInsets.symmetric(horizontal: 5, vertical: 2.5),
-          constraints: BoxConstraints(maxWidth: (size.width / 2) + 20),
-          child:
-              Padding(padding: EdgeInsets.all(7), child: Text(message.message)),
+          child: Padding(
+              padding: EdgeInsets.fromLTRB(10, 8, 15, 2),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    margin: EdgeInsets.only(bottom: 12),
+                    constraints: BoxConstraints(maxWidth: (size.width / 1.3)),
+                    child: Text(
+                      message.message,
+                      textAlign: TextAlign.start,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 0,
+                    right: -9,
+                    child: Text(
+                      '11:30',
+                      textAlign: TextAlign.end,
+                      style:
+                          TextStyle(fontSize: 9, fontWeight: FontWeight.w300),
+                    ),
+                  )
+                ],
+              )),
           decoration: BoxDecoration(
               borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(15),
+                  topLeft: Radius.circular(13),
                   bottomLeft: uid == message.userId
-                      ? Radius.circular(15)
+                      ? Radius.circular(13)
                       : Radius.circular(0),
-                  topRight: Radius.circular(15),
+                  topRight: Radius.circular(13),
                   bottomRight: uid == message.userId
                       ? Radius.circular(0)
-                      : Radius.circular(15)),
+                      : Radius.circular(13)),
               color: kPrimary),
         ),
       ],

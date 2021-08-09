@@ -1,12 +1,15 @@
+import 'dart:typed_data';
+
+import 'package:drishya_picker/drishya_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kilifi_county/constants.dart';
-import 'package:kilifi_county/screens/add_post_screen.dart';
-import 'package:kilifi_county/screens/forum/forum_screen.dart';
-import 'package:kilifi_county/widgets/media_grid.dart';
+import 'package:kilifi_county/screens/forum/add_post_screen.dart';
+import 'package:kilifi_county/screens/home/forum_screen.dart';
+import 'package:kilifi_county/screens/custom%20gallery/custom_gallery.dart';
 
 class FloatingButton extends StatefulWidget {
   static const routeName = '/forum';
@@ -23,6 +26,7 @@ class FloatingButtonState extends State<FloatingButton>
   @override
   void initState() {
     super.initState();
+    notifier = ValueNotifier(<DrishyaEntity>[]);
 
     scrollController = ScrollController()
       ..addListener(() {
@@ -31,11 +35,19 @@ class FloatingButtonState extends State<FloatingButton>
       });
   }
 
+  @override
+  void dispose() {
+    notifier.dispose();
+    super.dispose();
+  }
+
   void setDialVisible(bool value) {
     setState(() {
       dialVisible = value;
     });
   }
+
+  ValueNotifier<List<DrishyaEntity>> notifier;
 
   SpeedDial buildSpeedDial() {
     return SpeedDial(
@@ -116,9 +128,33 @@ class FloatingButtonState extends State<FloatingButton>
           onLongPress: () => print('SECOND CHILD LONG PRESS'),
         ),
         SpeedDialChild(
-          child: Icon(
-            Icons.photo_camera_back_outlined,
-            color: kPrimary,
+          child: ValueListenableBuilder<List<DrishyaEntity>>(
+            valueListenable: notifier,
+            builder: (context, list, child) {
+              return GalleryViewField(
+                selectedEntities: list,
+                onChanged: (entity, isRemoved) {
+                  final value = notifier.value.toList();
+                  if (isRemoved) {
+                    value.remove(entity);
+                  } else {
+                    value.add(entity);
+                  }
+                  notifier.value = value;
+                },
+                onSubmitted: (list) {
+                  notifier.value = list;
+                  if (list != null)
+                    Navigator.of(context)
+                        .pushNamed(AddPostScreen.routeName, arguments: list);
+                },
+                child: child,
+              );
+            },
+            child: Icon(
+              Icons.photo_camera_back_outlined,
+              color: kPrimary,
+            ),
           ),
           backgroundColor: kPrimary.shade100.withOpacity(0.6),
           labelWidget: Container(
@@ -130,11 +166,7 @@ class FloatingButtonState extends State<FloatingButton>
                     fontSize: 17,
                     color: Colors.white),
               )),
-          onTap: () {
-            Navigator.of(context).pushNamed(Gallery.routeName);
-            // Navigator.of(context)
-            //     .pushNamed(AddPostScreen.routeName, arguments: _image);
-          },
+          onTap: () {},
           onLongPress: () => print('THIRD CHILD LONG PRESS'),
         ),
       ],

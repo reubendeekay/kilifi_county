@@ -1,9 +1,20 @@
+import 'dart:io';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:kilifi_county/constants.dart';
 import 'package:kilifi_county/providers/user_provider.dart';
+import 'package:kilifi_county/screens/profile/connect_with_screen.dart';
+import 'package:kilifi_county/screens/profile/saved_post_screen.dart';
+
+import 'package:kilifi_county/screens/profile/user_appointments.dart';
+import 'package:kilifi_county/screens/profile/verification_screen.dart';
 import 'package:kilifi_county/screens/profile/widgets/account_details_screen.dart';
 import 'package:kilifi_county/screens/profile/widgets/profile_tile.dart';
+import 'package:kilifi_county/screens/services/consultation_screen.dart';
 import 'package:provider/provider.dart';
 
 class UserProfileScreen extends StatelessWidget {
@@ -42,10 +53,17 @@ class UserProfileScreen extends StatelessWidget {
               function: () => Navigator.of(context)
                   .pushNamed(AccountDetailsScreen.routeName, arguments: user),
             ),
-            ProfileTile(),
+            ProfileTile(
+              title: 'Request Verification',
+              description: 'Get verified ',
+              function: () =>
+                  Navigator.of(context).pushNamed(VerificationScreen.routeName),
+            ),
             ProfileTile(
               title: 'Appointments',
               description: 'View requested appointments',
+              function: () =>
+                  Navigator.of(context).pushNamed(UserAppointments.routeName),
             ),
             Container(
               margin: EdgeInsets.symmetric(
@@ -71,8 +89,9 @@ class UserProfileScreen extends StatelessWidget {
             ProfileTile(
               title: 'Saved Posts',
               description: 'View all your saved posts',
+              function: () =>
+                  Navigator.of(context).pushNamed(SavedPostScreen.routeName),
             ),
-            ProfileTile(),
             Container(
               margin: EdgeInsets.symmetric(
                 horizontal: 20,
@@ -93,10 +112,28 @@ class UserProfileScreen extends StatelessWidget {
                 ],
               ),
             ),
-            ProfileTile(),
+            ProfileTile(
+              title: 'Connect with us',
+              description: 'Interact on social media',
+              function: () =>
+                  Navigator.of(context).pushNamed(ConnectScreen.routeName),
+            ),
             ProfileTile(
               title: 'Need Help? Contact us',
               description: 'Get in touch with customer care',
+              function: () async {
+                await FirebaseFirestore.instance
+                    .collection('interactions')
+                    .doc('consultation')
+                    .collection(user.userId)
+                    .doc()
+                    .set({'sessionAt': Timestamp.now()});
+                Navigator.of(context)
+                    .pushNamed(ConsultationScreen.routeName, arguments: {
+                  'user': user,
+                  'isChat': true,
+                });
+              },
             ),
             Container(
               margin: EdgeInsets.symmetric(horizontal: 15),
@@ -124,11 +161,54 @@ class UserProfileScreen extends StatelessWidget {
 }
 
 //Top Bar
-class TopBar extends StatelessWidget {
+class TopBar extends StatefulWidget {
   final UserModel user;
   TopBar(this.user);
+
+  @override
+  _TopBarState createState() => _TopBarState();
+}
+
+class _TopBarState extends State<TopBar> {
+  File _image;
+
   @override
   Widget build(BuildContext context) {
+    void _getImage() async {
+      final pickedFile = await ImagePicker().getImage(
+          source: ImageSource.gallery,
+          imageQuality: 40,
+          maxHeight: 400,
+          maxWidth: 400);
+
+      setState(() {
+        if (pickedFile != null) {
+          _image = File(pickedFile.path);
+        } else {
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('No image selected')));
+        }
+      });
+
+      if (_image != null) {
+        var file;
+        file = await FirebaseStorage.instance
+            .ref('users_profile_images/${widget.user.userId}')
+            .putFile(_image)
+            .whenComplete(() async {
+          final url = await file.ref.getDownloadURL();
+          await FirebaseFirestore.instance
+              .collection('users')
+              .doc(widget.user.userId)
+              .update({'imageUrl': url});
+
+          await FirebaseStorage.instance
+              .ref('users_profile_images/${widget.user.userId}')
+              .delete();
+        });
+      }
+    }
+
     return Container(
       height: 200,
       child: ShaderMask(
@@ -165,19 +245,22 @@ class TopBar extends StatelessWidget {
                       CircleAvatar(
                         radius: 43,
                         backgroundImage: NetworkImage(
-                          user.imageUrl,
+                          widget.user.imageUrl,
                         ),
                       ),
                       Positioned(
                           bottom: 2,
                           right: 4,
-                          child: CircleAvatar(
-                            radius: 10,
-                            backgroundColor: Colors.red,
-                            child: Icon(
-                              Icons.edit,
-                              color: Colors.white,
-                              size: 13,
+                          child: GestureDetector(
+                            onTap: _getImage,
+                            child: CircleAvatar(
+                              radius: 10,
+                              backgroundColor: Colors.red,
+                              child: Icon(
+                                Icons.edit,
+                                color: Colors.white,
+                                size: 13,
+                              ),
                             ),
                           ))
                     ],
@@ -186,7 +269,7 @@ class TopBar extends StatelessWidget {
                     height: 7,
                   ),
                   Text(
-                    user.fullName,
+                    widget.user.fullName,
                     style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -196,7 +279,7 @@ class TopBar extends StatelessWidget {
                     height: 3,
                   ),
                   Text(
-                    '@ ${user.username}',
+                    '@ ${widget.user.username}',
                     style: TextStyle(
                         fontWeight: FontWeight.w500, color: Colors.white),
                   )

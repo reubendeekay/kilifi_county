@@ -1,11 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:kilifi_county/models/job_model.dart';
 import 'package:kilifi_county/screens/services/job_details_screen.dart';
 
 class JobOpportunitiesTile extends StatelessWidget {
+  final String userId;
+  final String fullName;
+  final String username;
+  final String jobId;
+  final String link;
+  final String description;
+  final List<dynamic> postPics;
+  final String imageUrl;
+
+  const JobOpportunitiesTile(
+      {this.userId,
+      this.fullName,
+      this.username,
+      this.description,
+      this.jobId,
+      this.link,
+      this.postPics,
+      this.imageUrl});
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => Navigator.of(context).pushNamed(JobDetailsScreen.routeName),
+      onTap: () => Navigator.of(context).pushNamed(JobDetailsScreen.routeName,
+          arguments: JobModel(
+            description: description,
+            fullName: fullName,
+            imageUrl: imageUrl,
+            jobId: jobId,
+            link: link,
+            postPics: postPics,
+            userId: userId,
+            username: username,
+          )),
       child: Container(
         height: 275,
         width: double.infinity,
@@ -19,8 +48,8 @@ class JobOpportunitiesTile extends StatelessWidget {
               Container(
                 height: 200,
                 width: double.infinity,
-                child: Image.asset(
-                  'assets/images/poster.jpg',
+                child: Image.network(
+                  postPics.first,
                   fit: BoxFit.fill,
                 ),
               ),
@@ -28,7 +57,7 @@ class JobOpportunitiesTile extends StatelessWidget {
                 height: 50,
                 margin: EdgeInsets.symmetric(vertical: 7.5, horizontal: 5),
                 child: Text(
-                  'Kilifi County that have been for a long time affected by water shortages.The County Government has also been on the fore front in the installation and construction of over 500 storage tanks in all the 35 wards of Kilifi County.',
+                  description,
                   softWrap: true,
                   overflow: TextOverflow.fade,
                 ),

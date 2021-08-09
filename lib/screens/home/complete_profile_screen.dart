@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:kilifi_county/constants.dart';
 
 class CompleteProfileScreen extends StatefulWidget {
@@ -37,12 +38,26 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
       if (_formKey.currentState.validate()) {
         if (_image == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Please put a profile picture')));
+            SnackBar(
+              content: Text('Please put a profile picture',
+                  style: TextStyle(color: Colors.white)),
+              backgroundColor: kPrimary,
+            ),
+          );
         } else {
           _formKey.currentState.save();
+          try {
+            user = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                email: email, password: password);
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(toBeginningOfSentenceCase(e.code),
+                  style: TextStyle(color: Colors.white)),
+              backgroundColor: kPrimary,
+            ));
+          }
+          user.user.sendEmailVerification();
 
-          user = await FirebaseAuth.instance
-              .createUserWithEmailAndPassword(email: email, password: password);
           final putImage = await FirebaseStorage.instance
               .ref('users_profile_images/${user.user.uid}')
               .putFile(_image);

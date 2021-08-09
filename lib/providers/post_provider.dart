@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -9,7 +11,7 @@ import 'package:kilifi_county/providers/user_provider.dart';
 class Post {
   final UserModel user;
   final String imageUrl;
-  final File imageFile;
+  final Uint8List imageFile;
   List likes;
   final String description;
   final String id;
@@ -56,7 +58,7 @@ class PostProvider with ChangeNotifier {
     if (post.imageFile != null) {
       final _imageUrl = await FirebaseStorage.instance
           .ref('forum/posts/${id.id}')
-          .putFile(post.imageFile);
+          .putData(post.imageFile);
       url = await _imageUrl.ref.getDownloadURL();
     }
 
@@ -98,5 +100,34 @@ class PostProvider with ChangeNotifier {
             : FieldValue.arrayRemove(userLike),
       },
     );
+  }
+
+  Future<void> savePost(Post post, bool isSave) async {
+    final uid = FirebaseAuth.instance.currentUser.uid;
+    isSave
+        ? await FirebaseFirestore.instance
+            .collection('userData')
+            .doc('savedPosts')
+            .collection(uid)
+            .doc(post.id)
+            .set({
+            'userId': post.user.userId,
+            'fullName': post.user.fullName,
+            'username': post.user.username,
+            'profilePic': post.user.imageUrl,
+            'imageUrl': post.imageUrl,
+            'postId': post.id,
+            'description': post.description,
+            'comments': post.comments,
+            'isVerified': post.user.isVerified,
+            'likes': post.likes,
+            'createdAt': Timestamp.now(),
+          }, SetOptions(merge: true))
+        : await FirebaseFirestore.instance
+            .collection('userData')
+            .doc('savedPosts')
+            .collection(uid)
+            .doc(post.id)
+            .delete();
   }
 }

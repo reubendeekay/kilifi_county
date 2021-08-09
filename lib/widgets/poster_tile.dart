@@ -1,9 +1,28 @@
 import 'dart:ui';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashed_circle/dashed_circle.dart';
 import 'package:flutter/material.dart';
+import 'package:kilifi_county/models/post_models.dart';
+import 'package:kilifi_county/widgets/stories.dart';
 
 class PosterTile extends StatefulWidget {
+  final String description;
+  final String fullName;
+  final String username;
+  final String imageUrl;
+  final List<dynamic> postPics;
+  final String userId;
+  final String postId;
+
+  const PosterTile(
+      {this.description,
+      this.fullName,
+      this.username,
+      this.imageUrl,
+      this.postPics,
+      this.userId,
+      this.postId});
   @override
   _PosterTileState createState() => _PosterTileState();
 }
@@ -40,8 +59,16 @@ class _PosterTileState extends State<PosterTile>
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () =>
-          showDialog(context: context, builder: (_) => PosterFullScreen()),
+      onTap: () => Navigator.of(context).pushNamed(StoriesPage.routeName,
+          arguments: StoryModel(
+            description: widget.description,
+            fullName: widget.fullName,
+            username: widget.username,
+            imageUrl: widget.imageUrl,
+            postId: widget.postId,
+            postPics: widget.postPics,
+            userId: widget.userId,
+          )),
       child: Container(
         alignment: Alignment.center,
         margin: EdgeInsets.only(left: 8, bottom: 10, top: 2),
@@ -57,7 +84,7 @@ class _PosterTileState extends State<PosterTile>
                 padding: const EdgeInsets.all(5.0),
                 child: CircleAvatar(
                   radius: 25.0,
-                  backgroundImage: AssetImage('assets/images/poster.jpg'),
+                  backgroundImage: NetworkImage(widget.postPics.last),
                 ),
               ),
             ),
@@ -73,23 +100,57 @@ class Stories extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(children: [
-          PosterTile(),
-          PosterTile(),
-          PosterTile(),
-          PosterTile(),
-          PosterTile(),
-          PosterTile(),
-          PosterTile(),
-        ]),
-      ),
+      child: StreamBuilder(
+          stream: FirebaseFirestore.instance
+              .collection('admin')
+              .doc('admin_data')
+              .collection('posters')
+              .orderBy('createdAt')
+              .limit(15)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData && !snapshot.hasError) {
+              List<DocumentSnapshot> documents = snapshot.data.docs;
+              return SingleChildScrollView(
+                child: Row(
+                  children: documents
+                      .map((e) => PosterTile(
+                            username: e['username'],
+                            userId: e['userId'],
+                            imageUrl: e['imageUrl'],
+                            postPics: e['postPics'],
+                            postId: e['postId'],
+                            fullName: e['fullName'],
+                            description: e['description'],
+                          ))
+                      .toList(),
+                ),
+              );
+            } else {
+              return Container();
+            }
+          }),
     );
   }
 }
 
 class PosterFullScreen extends StatelessWidget {
+  final String description;
+  final String fullName;
+  final String username;
+  final String imageUrl;
+  final List<dynamic> postPics;
+  final String userId;
+  final String postId;
+
+  const PosterFullScreen(
+      {this.description,
+      this.fullName,
+      this.username,
+      this.imageUrl,
+      this.postPics,
+      this.postId,
+      this.userId});
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -97,49 +158,63 @@ class PosterFullScreen extends StatelessWidget {
       filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
       child: Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        child: Stack(
-          children: [
-            Container(
-              width: size.width - 50,
-              height: size.width,
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  image: DecorationImage(
-                      image: ExactAssetImage('assets/images/poster.jpg'),
-                      fit: BoxFit.fill)),
-            ),
-            Positioned(
-                bottom: 0,
-                child: Container(
-                  width: size.width - 50,
-                  color: Colors.black38,
-                  child: Padding(
-                    padding: EdgeInsets.all(10),
-                    child: Text(
-                        'There are many opportunities for the citizens of Kilifi county'),
-                  ),
-                )),
-            Positioned(
-                left: 5,
-                top: 5,
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      backgroundImage: AssetImage('assets/images/profile.jpg'),
-                      radius: 15,
+        child: Container(
+          height: 400,
+          child: Stack(
+            children: [
+              AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: ListView.builder(
+                    itemBuilder: (ctx, i) => Container(
+                      width: size.width - 50,
+                      height: size.width,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          image: DecorationImage(
+                              image: NetworkImage(postPics[i]),
+                              fit: BoxFit.fill)),
                     ),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 5),
+                    itemCount: postPics.length,
+                  )),
+              Positioned(
+                  bottom: 0,
+                  child: Container(
+                    width: size.width - 70,
+                    color: Colors.black38,
+                    child: Padding(
+                      padding: EdgeInsets.all(10),
                       child: Text(
-                        'Reuben Jefwa',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            backgroundColor: Colors.black12),
+                        description,
+                        style: TextStyle(color: Colors.white),
                       ),
-                    )
-                  ],
-                ))
-          ],
+                    ),
+                  )),
+              Positioned(
+                  left: 5,
+                  top: 5,
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundImage: NetworkImage(imageUrl),
+                        radius: 15,
+                      ),
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: 5),
+                        child: Text(
+                          fullName,
+                          style: TextStyle(
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(color: Colors.grey[800], blurRadius: 5)
+                            ],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      )
+                    ],
+                  ))
+            ],
+          ),
         ),
       ),
     );

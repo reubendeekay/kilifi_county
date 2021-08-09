@@ -1,7 +1,11 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:kilifi_county/constants.dart';
-import 'package:kilifi_county/screens/complete_profile_screen.dart';
+
+import 'package:kilifi_county/screens/home/complete_profile_screen.dart';
+import 'package:kilifi_county/screens/home/password_reset_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   @override
@@ -15,6 +19,7 @@ class _AuthScreenState extends State<AuthScreen> {
   String username = '';
   String password = '';
   var isLogin = true;
+  bool isObsecure = true;
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +28,16 @@ class _AuthScreenState extends State<AuthScreen> {
         _formKey.currentState.save();
 
         if (isLogin) {
-          await FirebaseAuth.instance
-              .signInWithEmailAndPassword(email: email, password: password);
+          try {
+            await FirebaseAuth.instance
+                .signInWithEmailAndPassword(email: email, password: password);
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+              content: Text(toBeginningOfSentenceCase(e.code),
+                  style: TextStyle(color: Colors.white)),
+              backgroundColor: kPrimary,
+            ));
+          }
         } else {
           Navigator.of(context).pushReplacementNamed(
               CompleteProfileScreen.routeName,
@@ -161,11 +174,28 @@ class _AuthScreenState extends State<AuthScreen> {
                             decoration: InputDecoration(
                                 border: InputBorder.none,
                                 hintText: 'password',
+                                suffixIcon: GestureDetector(
+                                    onTap: () {
+                                      setState(() {
+                                        isObsecure = !isObsecure;
+                                      });
+                                    },
+                                    child: isObsecure
+                                        ? Icon(
+                                            Icons.remove_red_eye,
+                                            size: 22,
+                                            color: Colors.grey,
+                                          )
+                                        : Icon(
+                                            FontAwesomeIcons.eyeSlash,
+                                            color: Colors.grey,
+                                            size: 20,
+                                          )),
                                 prefixIcon: Icon(
                                   Icons.lock_rounded,
                                   color: kPrimary,
                                 )),
-                            obscureText: true,
+                            obscureText: isObsecure,
                             onChanged: (value) {
                               password = value;
                             },
@@ -180,6 +210,25 @@ class _AuthScreenState extends State<AuthScreen> {
                             },
                           ),
                         )),
+                    SizedBox(
+                      height: 10,
+                    ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        GestureDetector(
+                          onTap: () => Navigator.of(context)
+                              .pushNamed(PasswordResetScreen.routeName),
+                          child: Text(
+                            'Forgot Password?',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                        ),
+                        SizedBox(
+                          width: 20,
+                        )
+                      ],
+                    )
                   ],
                 ),
               ),
@@ -255,7 +304,6 @@ class _AuthScreenState extends State<AuthScreen> {
                   isLogin
                       ? 'Dont have an account? '
                       : 'Already have an account? ',
-                  style: TextStyle(color: Colors.black, fontSize: 13),
                 ),
                 GestureDetector(
                   onTap: () {

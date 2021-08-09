@@ -1,6 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:kilifi_county/constants.dart';
+import 'package:kilifi_county/models/appointment_model.dart';
+import 'package:kilifi_county/providers/user_provider.dart';
 import 'package:kilifi_county/screens/services/appointment_status_screen.dart';
 
 class AppointmentsScreen extends StatefulWidget {
@@ -34,16 +38,18 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     'Speaker of County Assembly'
   ];
 
-  void _trySubmit() async {
-    if (_formKey.currentState.validate()) {
-      _formKey.currentState.save();
-      showConfirmDialog();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final user = ModalRoute.of(context).settings.arguments as UserModel;
+
+    void _trySubmit() async {
+      if (_formKey.currentState.validate()) {
+        _formKey.currentState.save();
+        showConfirmDialog(user);
+      }
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Form(
@@ -105,7 +111,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           hintText: 'National ID No.',
                           hintStyle: TextStyle(fontSize: 14)),
                       onChanged: (value) {
-                        fullName = value;
+                        idNo = value;
                       },
                     ),
                   ),
@@ -124,7 +130,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           hintText: 'Active Phone number *',
                           hintStyle: TextStyle(fontSize: 14)),
                       onChanged: (value) {
-                        fullName = value;
+                        phoneNumber = value;
                       },
                       validator: (value) {
                         if (value.isEmpty) {
@@ -191,7 +197,7 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                                   child: Center(
                                       child: Text(date == null
                                           ? ''
-                                          : DateFormat('dd/mm/yyyy')
+                                          : DateFormat('dd/MM/yyyy')
                                               .format(date)
                                               .toString()))),
                             ),
@@ -298,12 +304,12 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
     });
   }
 
-  void showConfirmDialog() {
+  void showConfirmDialog(UserModel user) {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
               content: Text(
-                  'Department : $defaultValue \nDate : ${DateFormat('dd/mm/yyyy').format(date)} \nTime : ${time.format(context)}'),
+                  'Department : $defaultValue \nDate : ${DateFormat('dd/MM/yyyy').format(date)} \nTime : ${time.format(context)}'),
               title: Text('Confirm Details'),
               actions: [
                 GestureDetector(
@@ -318,10 +324,40 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                       ),
                     )),
                 GestureDetector(
-                    onTap: () {
+                    onTap: () async {
                       Navigator.of(context).pop();
+                      final appointment = AppointmentModel(
+                          date:
+                              DateFormat('dd/MM/yyyy').format(date).toString(),
+                          time: time.format(context).toString(),
+                          department: defaultValue,
+                          fullName: fullName,
+                          idNo: idNo,
+                          imageUrl: user.imageUrl,
+                          phoneNumber: phoneNumber,
+                          purpose: purpose,
+                          userId: user.userId);
+                      await FirebaseFirestore.instance
+                          .collection('admin')
+                          .doc('appointments')
+                          .collection(defaultValue)
+                          .doc()
+                          .set({
+                        'imageUrl': user.imageUrl,
+                        'name': fullName,
+                        'idNo': idNo,
+                        'userId': user.userId,
+                        'office': defaultValue,
+                        'phoneNumber': phoneNumber,
+                        'purpose': purpose,
+                        'isApproved': false,
+                        'date':
+                            DateFormat('dd/MM/yyyy').format(date).toString(),
+                        'time': time.format(context).toString()
+                      }, SetOptions(merge: true));
                       Navigator.of(context).pushReplacementNamed(
-                          AppointmentStatusScreen.routeName);
+                          AppointmentStatusScreen.routeName,
+                          arguments: appointment);
                     },
                     child: Container(
                       margin: EdgeInsets.symmetric(horizontal: 15, vertical: 5),

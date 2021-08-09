@@ -5,6 +5,7 @@ import 'package:kilifi_county/providers/post_provider.dart';
 
 import 'package:kilifi_county/screens/forum/comments_screen.dart';
 import 'package:kilifi_county/widgets/small%20widgets/like_widget.dart';
+import 'package:kilifi_county/widgets/small%20widgets/save_post_widget.dart';
 
 class ForumTextTile extends StatelessWidget {
   final Post post;
@@ -99,6 +100,11 @@ class ForumTextTile extends StatelessWidget {
                 size: 20,
                 tweet: true,
               ),
+              Spacer(),
+              SavePostWidget(
+                post: post,
+                size: 18,
+              )
             ]),
           ),
           Divider(

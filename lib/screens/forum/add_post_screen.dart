@@ -1,11 +1,15 @@
+import 'dart:io';
+import 'dart:typed_data';
+
+import 'package:drishya_picker/drishya_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kilifi_county/constants.dart';
 import 'package:kilifi_county/providers/dark_mode_provider.dart';
 import 'package:kilifi_county/providers/post_provider.dart';
 import 'package:kilifi_county/providers/user_provider.dart';
+import 'package:kilifi_county/screens/custom%20gallery/custom_gallery.dart';
 
-import 'package:kilifi_county/widgets/media_grid.dart';
 import 'package:provider/provider.dart';
 
 class AddPostScreen extends StatefulWidget {
@@ -17,16 +21,17 @@ class AddPostScreen extends StatefulWidget {
 class _AddPostScreenState extends State<AddPostScreen> {
   final _formKey = GlobalKey<FormState>();
   String message = '';
-  var _image;
+  Uint8List _image;
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    var _obtainedFile = ModalRoute.of(context).settings.arguments;
+    List<DrishyaEntity> _obtainedFile =
+        ModalRoute.of(context).settings.arguments;
     final dark = Provider.of<DarkThemeProvider>(context);
     final user = Provider.of<UsersProvider>(context).user;
 
-    _image = _obtainedFile;
+    _image = _obtainedFile.first.bytes;
     _obtainedFile = null;
 
     return Scaffold(
@@ -160,7 +165,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                                     ),
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(20),
-                                      child: Image.file(
+                                      child: Image.memory(
                                         _image,
                                         fit: BoxFit.cover,
                                       ),
@@ -252,7 +257,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                           SizedBox(
                             width: 5,
                           ),
-                          Expanded(child: HorizontalGallery())
+                          // Expanded(child: Gallery())
                         ],
                       ),
                     ),

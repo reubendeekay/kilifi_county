@@ -1,5 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:kilifi_county/constants.dart';
+import 'package:kilifi_county/models/appointment_model.dart';
 
 class AppointmentStatusScreen extends StatelessWidget {
   static const routeName = '/appointment-status';
@@ -7,6 +10,8 @@ class AppointmentStatusScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final appointment =
+        ModalRoute.of(context).settings.arguments as AppointmentModel;
     return Scaffold(
       body: Column(
         children: [
@@ -79,7 +84,23 @@ class AppointmentStatusScreen extends StatelessWidget {
           SizedBox(
             width: size.width - 70,
             child: ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () async {
+                  FirebaseFirestore.instance
+                      .collection('userData')
+                      .doc('appointments')
+                      .collection(appointment.userId)
+                      .doc()
+                      .set({
+                    'fullname': appointment.fullName,
+                    'idNo': appointment.idNo,
+                    'department': appointment.department,
+                    'date': appointment.date,
+                    'time': appointment.time,
+                    'purpose': appointment.purpose,
+                    'isApproved': false,
+                  }, SetOptions(merge: true));
+                  Navigator.of(context).pop();
+                },
                 child: Text(
                   'Okay',
                   style: TextStyle(color: Colors.white),

@@ -1,11 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:kilifi_county/providers/user_provider.dart';
-import 'package:kilifi_county/screens/services/about_us.dart';
+
 import 'package:kilifi_county/screens/services/appointments_screen.dart';
 import 'package:kilifi_county/screens/services/consultation_screen.dart';
+import 'package:kilifi_county/screens/services/e_citizen_screen.dart';
 import 'package:kilifi_county/screens/services/gallery_screen.dart';
 import 'package:kilifi_county/screens/services/job_oppportunities_screen.dart';
+import 'package:kilifi_county/screens/services/resource_center.dart/resource_center_screen.dart';
 import 'package:provider/provider.dart';
 
 class ServicesScreen extends StatelessWidget {
@@ -67,14 +69,21 @@ class ServicesScreen extends StatelessWidget {
                   ServiceTile(
                     color: Colors.amber[200],
                     title: 'Appointments',
-                    function: () => Navigator.of(context)
-                        .pushNamed(AppointmentsScreen.routeName),
+                    function: () => Navigator.of(context).pushNamed(
+                        AppointmentsScreen.routeName,
+                        arguments: user),
                   ),
                   ServiceTile(
-                      color: Colors.teal[200], title: 'E-Citizen \nServices'),
+                    color: Colors.teal[200],
+                    title: 'E-Citizen \nServices',
+                    function: () => Navigator.of(context)
+                        .pushNamed(ECitizenScreen.routeName),
+                  ),
                   ServiceTile(
                     color: Colors.deepPurple[200],
                     title: 'Resource Center',
+                    function: () => Navigator.of(context)
+                        .pushNamed(ResourceCenterScreen.routeName),
                   ),
                   ServiceTile(
                     color: Colors.red[200],
@@ -85,31 +94,18 @@ class ServicesScreen extends StatelessWidget {
                   ServiceTile(
                       color: Colors.cyan[200],
                       function: () async {
-                        await FirebaseFirestore.instance
-                            .collection('interactions')
-                            .doc('consultation')
-                            .collection(user.userId)
-                            .doc()
-                            .set({'sessionAt': Timestamp.now()});
                         Navigator.of(context).pushNamed(
                             ConsultationScreen.routeName,
-                            arguments: user);
+                            arguments: {
+                              'user': user,
+                              'isChat': true,
+                            });
                       }),
-                  ServiceTile(
-                    color: Colors.brown[200],
-                    title: 'Projects',
-                  ),
                   ServiceTile(
                     color: Colors.green[200],
                     title: 'Gallery',
                     function: () => Navigator.of(context)
                         .pushNamed(GalleryScreen.routeName),
-                  ),
-                  ServiceTile(
-                    color: Colors.blueGrey[200],
-                    title: 'About Us',
-                    function: () =>
-                        Navigator.of(context).pushNamed(AboutUs.routeName),
                   ),
                 ],
               ),

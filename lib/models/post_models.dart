@@ -34,3 +34,22 @@ class Likes {
     };
   }
 }
+
+class StoryModel {
+  final String description;
+  final String fullName;
+  final String username;
+  final String imageUrl;
+  final List<dynamic> postPics;
+  final String userId;
+  final String postId;
+
+  StoryModel(
+      {this.description,
+      this.fullName,
+      this.username,
+      this.imageUrl,
+      this.postPics,
+      this.userId,
+      this.postId});
+}

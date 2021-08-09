@@ -1,29 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 
-const imgList = [
-  'assets/images/poster.jpg',
-  'assets/images/profile.jpg',
-  'assets/images/poster.jpg',
-  'assets/images/profile.jpg',
-];
-
-final List<Widget> imageSliders = imgList
-    .map((item) => Container(
-          child: Container(
-            margin: EdgeInsets.all(5.0),
-            child: ClipRRect(
-                borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                child: Stack(
-                  children: <Widget>[
-                    Image.asset(item, fit: BoxFit.cover, width: 1000.0),
-                  ],
-                )),
-          ),
-        ))
-    .toList();
-
 class GalleryItem extends StatefulWidget {
+  final String caption;
+  final String postId;
+  final List<dynamic> images;
+
+  const GalleryItem({this.caption, this.postId, this.images});
   @override
   State<StatefulWidget> createState() {
     return _GalleryItemState();
@@ -36,6 +19,24 @@ class _GalleryItemState extends State<GalleryItem> {
 
   @override
   Widget build(BuildContext context) {
+    final List<Widget> imageSliders = widget.images
+        .map((item) => Container(
+              child: Container(
+                margin: EdgeInsets.all(5.0),
+                child: ClipRRect(
+                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                    child: Stack(
+                      children: <Widget>[
+                        Image.network(
+                          item,
+                          fit: BoxFit.cover,
+                          width: double.infinity,
+                        )
+                      ],
+                    )),
+              ),
+            ))
+        .toList();
     return Container(
       child: Column(
         children: [
@@ -63,7 +64,7 @@ class _GalleryItemState extends State<GalleryItem> {
 
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: imgList.asMap().entries.map((entry) {
+                  children: widget.images.asMap().entries.map((entry) {
                     return GestureDetector(
                       onTap: () => _controller.animateToPage(entry.key),
                       child: Container(
@@ -90,7 +91,7 @@ class _GalleryItemState extends State<GalleryItem> {
             alignment: Alignment.centerLeft,
             margin: EdgeInsets.fromLTRB(12, 1, 10, 5),
             child: Text(
-              'Short description',
+              widget.caption,
               style: TextStyle(
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
