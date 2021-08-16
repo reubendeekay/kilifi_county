@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_chat_types/flutter_chat_types.dart' as types;
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:kilifi_county/constants.dart';
@@ -57,12 +58,13 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             ));
           }
           user.user.sendEmailVerification();
+          
 
           final putImage = await FirebaseStorage.instance
               .ref('users_profile_images/${user.user.uid}')
               .putFile(_image);
           final url = await putImage.ref.getDownloadURL();
-
+          types.User use;
           await FirebaseFirestore.instance
               .collection('users')
               .doc(user.user.uid)
@@ -75,8 +77,15 @@ class _CompleteProfileScreenState extends State<CompleteProfileScreen> {
             'nationalId': nationalId,
             'phoneNumber': phoneNumber,
             'subCounty': subCounty,
-            'joinedIn': Timestamp.now(),
+            'office': null,
+            'firstName': fullName,
+            'isAdmin': false,
+            'joinedAt': Timestamp.now(),
             'isVerified': false,
+            'lastSeen': use.lastSeen,
+            'metadata': use.metadata,
+            'role': use.role?.toShortString(),
+            'updatedAt': FieldValue.serverTimestamp(),
           }, SetOptions(merge: true));
         }
       }
