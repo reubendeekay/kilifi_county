@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:drishya_picker/drishya_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -21,7 +22,9 @@ class AddPostScreen extends StatefulWidget {
 class _AddPostScreenState extends State<AddPostScreen> {
   final _formKey = GlobalKey<FormState>();
   String message = '';
-  Uint8List _image;
+  List<Uint8List> _image = [];
+  final CarouselController _controller = CarouselController();
+  int _current = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +34,11 @@ class _AddPostScreenState extends State<AddPostScreen> {
     final dark = Provider.of<DarkThemeProvider>(context);
     final user = Provider.of<UsersProvider>(context).user;
 
-    _image = _obtainedFile.first.bytes;
+    _obtainedFile != null
+        ? _obtainedFile.forEach((element) {
+            _image.add(element.bytes);
+          })
+        : null;
     _obtainedFile = null;
 
     return Scaffold(
@@ -62,27 +69,26 @@ class _AddPostScreenState extends State<AddPostScreen> {
                   },
                   icon: FaIcon(FontAwesomeIcons.times)),
               Spacer(),
-              Container(
+              SizedBox(
                 height: 35,
                 width: 80,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20), color: kPrimary),
-                child: GestureDetector(
-                    onTap: () async {
+                child: RaisedButton(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    color: kPrimary,
+                    onPressed: () async {
                       _formKey.currentState.save();
-                      await Provider.of<PostProvider>(context, listen: false)
-                          .addPost(
-                              Post(
-                                comments: null,
-                                description: message,
-                                imageFile: _image,
-                                likes: null,
-                                user: user,
-                              ),
-                              context);
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text('Posted')));
+                      Provider.of<PostProvider>(context, listen: false).addPost(
+                          Post(
+                            comments: null,
+                            description: message,
+                            imageFile: _image,
+                            likes: null,
+                            user: user,
+                          ),
+                          context);
+
                       Navigator.of(context).pop();
                     },
                     child: Text(
@@ -96,7 +102,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
       body: SafeArea(
         child: Container(
           child: SingleChildScrollView(
-            physics: NeverScrollableScrollPhysics(),
+            // physics: NeverScrollableScrollPhysics(),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -138,7 +144,7 @@ class _AddPostScreenState extends State<AddPostScreen> {
                                           fontStyle: FontStyle.italic,
                                           color: Colors.grey,
                                           fontSize: 13),
-                                    )
+                                    ),
                                   ],
                                 ),
                               ),
@@ -147,54 +153,92 @@ class _AddPostScreenState extends State<AddPostScreen> {
                                   height: 30,
                                   child: IconButton(
                                       onPressed: () {},
-                                      icon: Icon(Icons.more_vert)))
+                                      icon: Icon(Icons.more_vert))),
                             ],
                           ),
                           //If the User had selected the photos Option//........................................
-                          if (_image != null)
-                            Stack(
-                              children: [
-                                Container(
-                                  height: size.width - 50,
-                                  margin: EdgeInsets.only(top: 5, left: 2),
-                                  width: double.infinity,
-                                  child: Card(
-                                    elevation: 5,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(20),
-                                      child: Image.memory(
-                                        _image,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
+                          if (_image.isNotEmpty)
+                            Container(
+                              constraints:
+                                  BoxConstraints(maxHeight: size.height * 0.68),
+                              margin: EdgeInsets.only(top: 5, left: 2),
+                              width: double.infinity,
+                              child: Card(
+                                elevation: 5,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
                                 ),
-                                Positioned(
-                                    right: 20,
-                                    top: 20,
-                                    child: GestureDetector(
-                                      onTap: () {
-                                        setState(() {
-                                          _image = null;
-                                        });
-                                      },
-                                      child: CircleAvatar(
-                                        radius: 15,
-                                        backgroundColor: Colors.black,
-                                        child: Center(
-                                          child: FaIcon(
-                                            FontAwesomeIcons.times,
-                                            color: Colors.white,
-                                            size: 18,
-                                          ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(20),
+                                  child: Container(
+                                    height: size.width,
+                                    child: Stack(children: [
+                                      CarouselSlider(
+                                        items: _image
+                                            .map((e) => Container(
+                                                  width: size.width,
+                                                  height: size.width,
+                                                  child: Image.memory(
+                                                    e,
+                                                    fit: BoxFit.cover,
+                                                  ),
+                                                ))
+                                            .toList(),
+                                        carouselController: _controller,
+                                        options: CarouselOptions(
+                                            autoPlay: false,
+                                            enlargeCenterPage: true,
+                                            height: size.width,
+                                            disableCenter: true,
+                                            viewportFraction: 1,
+                                            onPageChanged: (index, reason) {
+                                              setState(() {
+                                                _current = index;
+                                              });
+                                            }),
+                                      ),
+                                      Align(
+                                        // bottom: 5,
+                                        alignment: Alignment(1, 1),
+
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: _image
+                                              .asMap()
+                                              .entries
+                                              .map((entry) {
+                                            return GestureDetector(
+                                              onTap: () => _controller
+                                                  .animateToPage(entry.key),
+                                              child: Container(
+                                                width: 6.0,
+                                                height: 6.0,
+                                                margin: EdgeInsets.symmetric(
+                                                    vertical: 10.0,
+                                                    horizontal: 4.0),
+                                                decoration: BoxDecoration(
+                                                    shape: BoxShape.circle,
+                                                    color: (Theme.of(context)
+                                                                    .brightness ==
+                                                                Brightness.dark
+                                                            ? Colors.white
+                                                            : Colors.black)
+                                                        .withOpacity(_current ==
+                                                                entry.key
+                                                            ? 0.9
+                                                            : 0.4)),
+                                              ),
+                                            );
+                                          }).toList(),
                                         ),
                                       ),
-                                    ))
-                              ],
+                                    ]),
+                                  ),
+                                ),
+                              ),
                             ),
+
                           //.....................................................
 
                           Form(

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:kilifi_county/providers/user_provider.dart';
 import 'package:kilifi_county/screens/chat/widgets/chat_network.dart';
@@ -13,7 +14,7 @@ class ChatScreen extends StatelessWidget {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: NetworkImage(user.imageUrl),
+              backgroundImage: CachedNetworkImageProvider(user.imageUrl),
               radius: 23,
             ),
             SizedBox(

@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class DownloadsScreen extends StatelessWidget {
@@ -39,23 +40,33 @@ class DownloadTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    return Container(
-        margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        child: Row(
-          children: [
-            Container(
-                width: 50,
-                child: FaIcon(
-                  FontAwesomeIcons.filePdf,
-                  color: Colors.red,
-                  size: 50,
-                )),
-            Container(
-              width: size.width - 90,
-              margin: EdgeInsets.only(left: 10),
-              child: Text(fileName.toUpperCase()),
-            ),
-          ],
-        ));
+    return GestureDetector(
+      onTap: () async {
+        await FlutterDownloader.enqueue(
+          url: url,
+          savedDir: '/storage/emulated/0/Download/',
+          showNotification: true,
+          openFileFromNotification: true,
+        );
+      },
+      child: Container(
+          margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          child: Row(
+            children: [
+              Container(
+                  width: 50,
+                  child: FaIcon(
+                    FontAwesomeIcons.filePdf,
+                    color: Colors.red,
+                    size: 50,
+                  )),
+              Container(
+                width: size.width - 90,
+                margin: EdgeInsets.only(left: 10),
+                child: Text(fileName.toUpperCase()),
+              ),
+            ],
+          )),
+    );
   }
 }

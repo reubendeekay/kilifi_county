@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dashed_circle/dashed_circle.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ class PosterTile extends StatefulWidget {
   final String description;
   final String fullName;
   final String username;
+
   final String imageUrl;
   final List<dynamic> postPics;
   final String userId;
@@ -77,14 +79,20 @@ class _PosterTileState extends State<PosterTile>
           child: DashedCircle(
             gapSize: gap.value,
             dashes: 30,
-            color: Colors.deepOrange,
+            color: Colors.green,
             child: RotationTransition(
               turns: reverse,
               child: Padding(
                 padding: const EdgeInsets.all(5.0),
-                child: CircleAvatar(
-                  radius: 25.0,
-                  backgroundImage: NetworkImage(widget.postPics.last),
+                child: Hero(
+                  tag: widget.postId,
+                  transitionOnUserGestures: true,
+                  child: CircleAvatar(
+                    radius: 25.0,
+                    backgroundImage: CachedNetworkImageProvider(
+                      widget.postPics.last,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -99,6 +107,7 @@ class Stories extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 70,
       margin: EdgeInsets.symmetric(horizontal: 12),
       child: StreamBuilder(
           stream: FirebaseFirestore.instance
@@ -111,20 +120,19 @@ class Stories extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.hasData && !snapshot.hasError) {
               List<DocumentSnapshot> documents = snapshot.data.docs;
-              return SingleChildScrollView(
-                child: Row(
-                  children: documents
-                      .map((e) => PosterTile(
-                            username: e['username'],
-                            userId: e['userId'],
-                            imageUrl: e['imageUrl'],
-                            postPics: e['postPics'],
-                            postId: e['postId'],
-                            fullName: e['fullName'],
-                            description: e['description'],
-                          ))
-                      .toList(),
-                ),
+              return ListView(
+                scrollDirection: Axis.horizontal,
+                children: documents
+                    .map((e) => PosterTile(
+                          username: e['username'],
+                          userId: e['userId'],
+                          imageUrl: e['imageUrl'],
+                          postPics: e['postPics'],
+                          postId: e['postId'],
+                          fullName: e['fullName'],
+                          description: e['description'],
+                        ))
+                    .toList(),
               );
             } else {
               return Container();
@@ -134,89 +142,89 @@ class Stories extends StatelessWidget {
   }
 }
 
-class PosterFullScreen extends StatelessWidget {
-  final String description;
-  final String fullName;
-  final String username;
-  final String imageUrl;
-  final List<dynamic> postPics;
-  final String userId;
-  final String postId;
+// class PosterFullScreen extends StatelessWidget {
+//   final String description;
+//   final String fullName;
+//   final String username;
+//   final String imageUrl;
+//   final List<dynamic> postPics;
+//   final String userId;
+//   final String postId;
 
-  const PosterFullScreen(
-      {this.description,
-      this.fullName,
-      this.username,
-      this.imageUrl,
-      this.postPics,
-      this.postId,
-      this.userId});
-  @override
-  Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
-      child: Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        child: Container(
-          height: 400,
-          child: Stack(
-            children: [
-              AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: ListView.builder(
-                    itemBuilder: (ctx, i) => Container(
-                      width: size.width - 50,
-                      height: size.width,
-                      decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          image: DecorationImage(
-                              image: NetworkImage(postPics[i]),
-                              fit: BoxFit.fill)),
-                    ),
-                    itemCount: postPics.length,
-                  )),
-              Positioned(
-                  bottom: 0,
-                  child: Container(
-                    width: size.width - 70,
-                    color: Colors.black38,
-                    child: Padding(
-                      padding: EdgeInsets.all(10),
-                      child: Text(
-                        description,
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                  )),
-              Positioned(
-                  left: 5,
-                  top: 5,
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        backgroundImage: NetworkImage(imageUrl),
-                        radius: 15,
-                      ),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 5),
-                        child: Text(
-                          fullName,
-                          style: TextStyle(
-                            color: Colors.white,
-                            shadows: [
-                              Shadow(color: Colors.grey[800], blurRadius: 5)
-                            ],
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      )
-                    ],
-                  ))
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+//   const PosterFullScreen(
+//       {this.description,
+//       this.fullName,
+//       this.username,
+//       this.imageUrl,
+//       this.postPics,
+//       this.postId,
+//       this.userId});
+//   @override
+//   Widget build(BuildContext context) {
+//     final size = MediaQuery.of(context).size;
+//     return BackdropFilter(
+//       filter: ImageFilter.blur(sigmaX: 2.5, sigmaY: 2.5),
+//       child: Dialog(
+//         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+//         child: Container(
+//           height: 400,
+//           child: Stack(
+//             children: [
+//               AnimatedSwitcher(
+//                   duration: const Duration(milliseconds: 200),
+//                   child: ListView.builder(
+//                     itemBuilder: (ctx, i) => Container(
+//                       width: size.width - 50,
+//                       height: size.width,
+//                       decoration: BoxDecoration(
+//                           borderRadius: BorderRadius.circular(10),
+//                           image: DecorationImage(
+//                               image: NetworkImage(postPics[i]),
+//                               fit: BoxFit.fill)),
+//                     ),
+//                     itemCount: postPics.length,
+//                   )),
+//               Positioned(
+//                   bottom: 0,
+//                   child: Container(
+//                     width: size.width - 70,
+//                     color: Colors.black38,
+//                     child: Padding(
+//                       padding: EdgeInsets.all(10),
+//                       child: Text(
+//                         description,
+//                         style: TextStyle(color: Colors.white),
+//                       ),
+//                     ),
+//                   )),
+//               Positioned(
+//                   left: 5,
+//                   top: 5,
+//                   child: Row(
+//                     children: [
+//                       CircleAvatar(
+//                         backgroundImage: NetworkImage(imageUrl),
+//                         radius: 15,
+//                       ),
+//                       Container(
+//                         margin: EdgeInsets.symmetric(horizontal: 5),
+//                         child: Text(
+//                           fullName,
+//                           style: TextStyle(
+//                             color: Colors.white,
+//                             shadows: [
+//                               Shadow(color: Colors.grey[800], blurRadius: 5)
+//                             ],
+//                             fontWeight: FontWeight.bold,
+//                           ),
+//                         ),
+//                       )
+//                     ],
+//                   ))
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }

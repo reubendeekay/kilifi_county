@@ -1,6 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_options.dart';
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kilifi_county/constants.dart';
+import 'package:kilifi_county/models/post_models.dart';
 import 'package:kilifi_county/providers/dark_mode_provider.dart';
 import 'package:kilifi_county/providers/post_provider.dart';
 import 'package:kilifi_county/screens/forum/comments_screen.dart';
@@ -16,6 +21,8 @@ class ForumPictureTile extends StatefulWidget {
 }
 
 class _ForumPictureTileState extends State<ForumPictureTile> {
+  final CarouselController _controller = CarouselController();
+  int _current = 0;
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -26,16 +33,21 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
         shape: BoxShape.rectangle,
       ),
       width: double.infinity,
-      margin: EdgeInsets.fromLTRB(10, 5, 10, 0),
+      margin: EdgeInsets.fromLTRB(10, 10, 10, 10),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundImage: NetworkImage(widget.post.user.imageUrl),
+              Hero(
+                tag: widget.post.id,
+                transitionOnUserGestures: true,
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundImage:
+                      CachedNetworkImageProvider(widget.post.user.imageUrl),
+                ),
               ),
               SizedBox(
                 width: 10,
@@ -76,26 +88,93 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
               Spacer(),
               SizedBox(
                   height: 30,
-                  child:
-                      IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)))
+                  child: PopupMenuButton(
+                      itemBuilder: (ctx) => [
+                            PopupMenuItem(
+                                value: 0,
+                                child: Text(
+                                  'Save',
+                                  style: TextStyle(fontSize: 13),
+                                )),
+                          ],
+                      onSelected: (i) async {
+                        if (i == 0) {
+                          await FlutterDownloader.enqueue(
+                            url: widget.post.imageUrl[_current],
+                            savedDir: '/storage/emulated/0/Download/',
+                            showNotification: true,
+                            openFileFromNotification: true,
+                          );
+                        }
+                      },
+                      icon: Icon(Icons.more_vert))),
             ],
           ),
+          SizedBox(
+            height: 2.5,
+          ),
           Container(
-            height: size.width,
+            constraints: BoxConstraints(maxHeight: size.width),
             margin: EdgeInsets.only(top: 5, left: 2),
             width: double.infinity,
             child: Card(
               elevation: 0,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(15),
-                child: Image.network(
-                  widget.post.imageUrl,
-                  fit: BoxFit.fill,
+              child: Stack(children: [
+                CarouselSlider(
+                  items: widget.post.imageUrl
+                      .map(
+                        (e) => Container(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: cachedImage(url: e),
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  carouselController: _controller,
+                  options: CarouselOptions(
+                      autoPlay: false,
+                      enlargeCenterPage: true,
+                      disableCenter: true,
+                      height: size.width,
+                      viewportFraction: 1,
+                      onPageChanged: (index, reason) {
+                        setState(() {
+                          _current = index;
+                        });
+                      }),
                 ),
-              ),
+                Align(
+                  // bottom: 5,
+                  alignment: Alignment(1, 1),
+
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: widget.post.imageUrl.asMap().entries.map((entry) {
+                      return GestureDetector(
+                        onTap: () => _controller.animateToPage(entry.key),
+                        child: Container(
+                          width: 6.0,
+                          height: 6.0,
+                          margin: EdgeInsets.symmetric(
+                              vertical: 10.0, horizontal: 4.0),
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: (Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Colors.white
+                                      : Colors.black)
+                                  .withOpacity(
+                                      _current == entry.key ? 0.9 : 0.4)),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ]),
             ),
           ),
           Container(
@@ -146,7 +225,7 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
                             left: 0,
                             child: CircleAvatar(
                                 radius: 14,
-                                backgroundImage: NetworkImage(
+                                backgroundImage: CachedNetworkImageProvider(
                                   widget.post.likes[0]['images'],
                                 ))),
                         if (widget.post.likes.length > 1)
@@ -154,7 +233,7 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
                               left: 12,
                               child: CircleAvatar(
                                   radius: 14,
-                                  backgroundImage: NetworkImage(
+                                  backgroundImage: CachedNetworkImageProvider(
                                     widget.post.likes[1]['images'],
                                   ))),
                         if (widget.post.likes.length > 2)
@@ -162,7 +241,7 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
                               left: 24,
                               child: CircleAvatar(
                                   radius: 14,
-                                  backgroundImage: NetworkImage(
+                                  backgroundImage: CachedNetworkImageProvider(
                                     widget.post.likes[2]['images'],
                                   ))),
                         if (widget.post.likes.length > 3)
@@ -170,7 +249,7 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
                               left: 36,
                               child: CircleAvatar(
                                   radius: 14,
-                                  backgroundImage: NetworkImage(
+                                  backgroundImage: CachedNetworkImageProvider(
                                     widget.post.likes[3]['images'],
                                   ))),
                         if (widget.post.likes.length > 4)
@@ -178,7 +257,7 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
                               left: 48,
                               child: CircleAvatar(
                                   radius: 14,
-                                  backgroundImage: NetworkImage(
+                                  backgroundImage: CachedNetworkImageProvider(
                                     widget.post.likes[4]['images'],
                                   ))),
                       ],
@@ -255,7 +334,7 @@ class _ForumPictureTileState extends State<ForumPictureTile> {
                 ),
               ),
             ),
-          Divider()
+          Divider(),
         ],
       ),
     );

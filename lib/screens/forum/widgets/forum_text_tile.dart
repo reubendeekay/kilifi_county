@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -15,15 +16,20 @@ class ForumTextTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundImage: NetworkImage(post.user.imageUrl),
+              Hero(
+                tag: post.id,
+                transitionOnUserGestures: true,
+                child: CircleAvatar(
+                  radius: 18,
+                  backgroundImage:
+                      CachedNetworkImageProvider(post.user.imageUrl),
+                ),
               ),
               SizedBox(
                 width: 10,
@@ -66,49 +72,61 @@ class ForumTextTile extends StatelessWidget {
           SizedBox(
             height: 5,
           ),
-          Container(
-            margin: EdgeInsets.only(left: 10),
-            child: Text(post.description),
-          ),
-          SizedBox(
-            height: 5,
-          ),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 15),
-            child: Row(children: [
-              GestureDetector(
-                onTap: () => Navigator.of(context)
-                    .pushNamed(CommentsScreen.routeName, arguments: post),
-                child: FaIcon(
-                  FontAwesomeIcons.comment,
-                  color: Colors.grey,
-                  size: 18,
+          GestureDetector(
+            onTap: () => Navigator.of(context)
+                .pushNamed(CommentsScreen.routeName, arguments: post),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  margin: EdgeInsets.only(left: 10),
+                  child: Text(post.description),
                 ),
-              ),
-              SizedBox(
-                width: 7,
-              ),
-              Text(
-                post.comments.length.toStringAsFixed(0),
-                style: TextStyle(color: Colors.grey),
-              ),
-              SizedBox(
-                width: 40,
-              ),
-              LikeWidget(
-                post: post,
-                size: 20,
-                tweet: true,
-              ),
-              Spacer(),
-              SavePostWidget(
-                post: post,
-                size: 18,
-              )
-            ]),
-          ),
-          Divider(
-            height: 9,
+                SizedBox(
+                  height: 5,
+                ),
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 15),
+                  child: Row(children: [
+                    GestureDetector(
+                      onTap: () => Navigator.of(context)
+                          .pushNamed(CommentsScreen.routeName, arguments: post),
+                      child: FaIcon(
+                        FontAwesomeIcons.comment,
+                        color: Colors.grey,
+                        size: 18,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 7,
+                    ),
+                    Text(
+                      post.comments.length.toStringAsFixed(0),
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                    SizedBox(
+                      width: 40,
+                    ),
+                    LikeWidget(
+                      post: post,
+                      size: 20,
+                      tweet: true,
+                    ),
+                    Spacer(),
+                    SavePostWidget(
+                      post: post,
+                      size: 18,
+                    )
+                  ]),
+                ),
+                SizedBox(
+                  height: 8,
+                ),
+                Divider(
+                  height: 9,
+                ),
+              ],
+            ),
           )
         ],
       ),

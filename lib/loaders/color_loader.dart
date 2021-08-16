@@ -82,7 +82,7 @@ class _ColorLoader5State extends State<ColorLoader5>
             child: new Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Dot(
-                radius: 10.0,
+                radius: 7.0,
                 color: widget.dotOneColor,
                 type: widget.dotType,
                 icon: widget.dotIcon,
@@ -98,7 +98,7 @@ class _ColorLoader5State extends State<ColorLoader5>
             child: new Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Dot(
-                radius: 10.0,
+                radius: 7.0,
                 color: widget.dotTwoColor,
                 type: widget.dotType,
                 icon: widget.dotIcon,
@@ -114,7 +114,7 @@ class _ColorLoader5State extends State<ColorLoader5>
             child: new Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Dot(
-                radius: 10.0,
+                radius: 7.0,
                 color: widget.dotThreeColor,
                 type: widget.dotType,
                 icon: widget.dotIcon,

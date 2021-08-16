@@ -14,7 +14,10 @@ class ForumPosts extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: FirebaseFirestore.instance.collection('posts').snapshots(),
+      stream: FirebaseFirestore.instance
+          .collection('posts')
+          .orderBy('createdAt', descending: true)
+          .snapshots(),
       builder: (ctx, snapshot) {
         if (!snapshot.hasData || snapshot.hasError || snapshot.data == null) {
           return MyLoader();
@@ -23,7 +26,7 @@ class ForumPosts extends StatelessWidget {
 
           List<Widget> forum = [];
           documents.forEach((e) {
-            if (e['imageUrl'] != null) {
+            if (e['imageUrl'].isNotEmpty) {
               forum.add(ForumPictureTile(Post(
                   comments: e['comments'],
                   description: e['description'],
@@ -94,52 +97,57 @@ class SavedPost extends StatelessWidget {
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser.uid;
     return StreamBuilder(
-      stream: FirebaseFirestore.instance
-          .collection('userData')
-          .doc('savedPosts')
-          .collection(uid)
-          .orderBy('createdAt')
-          .snapshots(),
+      stream: FirebaseFirestore.instance.collection('posts').snapshots(),
       builder: (ctx, snapshot) {
         if (!snapshot.hasData || snapshot.hasError || snapshot.data == null) {
-          return Center(child: CircularProgressIndicator());
+          return Center(child: MyLoader());
         } else {
           List<DocumentSnapshot> documents = snapshot.data.docs;
-
           List<Widget> forum = [];
-          documents.forEach((e) {
-            if (e['imageUrl'] != null) {
-              forum.add(ForumPictureTile(Post(
-                  comments: e['comments'],
-                  description: e['description'],
-                  id: e['postId'],
-                  imageUrl: e['imageUrl'],
-                  likes: e['likes'],
-                  user: UserModel(
-                      fullName: e['fullName'],
-                      imageUrl: e['profilePic'],
-                      username: e['username'],
-                      userId: e['userId'],
-                      isVerified: e['isVerified']))));
-            } else {
-              forum.add(ForumTextTile(Post(
-                  comments: e['comments'],
-                  description: e['description'],
-                  id: e['postId'],
-                  likes: e['likes'],
-                  user: UserModel(
-                      fullName: e['fullName'],
-                      imageUrl: e['profilePic'],
-                      username: e['username'],
-                      userId: e['userId'],
-                      isVerified: e['isVerified']))));
-            }
-          });
+
+          FirebaseFirestore.instance
+              .collection('userData')
+              .doc('savedPosts')
+              .collection(uid)
+              .orderBy('createdAt')
+              .get()
+              .then((value) => value.docs.forEach((element) {
+                    documents.forEach((e) {
+                      if (e['imageUrl'] != null) {
+                        forum.add(ForumPictureTile(Post(
+                            comments: e['comments'],
+                            description: e['description'],
+                            id: e['postId'],
+                            imageUrl: e['imageUrl'],
+                            likes: e['likes'],
+                            user: UserModel(
+                                fullName: e['fullName'],
+                                imageUrl: e['profilePic'],
+                                username: e['username'],
+                                userId: e['userId'],
+                                isVerified: e['isVerified']))));
+                      } else {
+                        forum.add(ForumTextTile(Post(
+                            comments: e['comments'],
+                            description: e['description'],
+                            id: e['postId'],
+                            likes: e['likes'],
+                            user: UserModel(
+                                fullName: e['fullName'],
+                                imageUrl: e['profilePic'],
+                                username: e['username'],
+                                userId: e['userId'],
+                                isVerified: e['isVerified']))));
+                      }
+                    });
+                  }));
 
           return ListView(
               physics: NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              children: forum);
+              children: forum.isEmpty
+                  ? List.generate(1, (index) => Container())
+                  : forum);
         }
       },
     );
@@ -152,27 +160,52 @@ class AppointmentItems extends StatelessWidget {
     final uid = FirebaseAuth.instance.currentUser.uid;
     return StreamBuilder(
         stream: FirebaseFirestore.instance
-            .collection('userData')
+            .collection('admin')
             .doc('appointments')
-            .collection(uid)
+            .collection('Governor')
+            .where('userId', isEqualTo: uid)
             .snapshots(),
         builder: (ctx, snapshot) {
           if (!snapshot.hasData || snapshot.hasError || snapshot.data == null) {
-            return Center(child: CircularProgressIndicator());
+            return Expanded(
+                child: Container(
+              child: MyLoader(),
+            ));
           } else {
             List<DocumentSnapshot> documents = snapshot.data.docs;
             return Expanded(
-              child: ListView(
-                children: documents
-                    .map((e) => UserAppointmentTile(
-                          date: e['date'],
-                          department: e['department'],
-                          status: e['isApproved'],
-                          time: e['time'],
-                        ))
-                    .toList(),
-              ),
-            );
+                child: ListView.builder(
+              itemBuilder: (ctx, i) {
+                if (i == 0) {
+                  return UserAppointmentsFirst(
+                    appointmentId: documents[i]['appointmentId'],
+                    fullName: documents[i]['name'],
+                    purpose: documents[i]['purpose'],
+                    imageUrl: documents[i]['imageUrl'],
+                    phoneNumber: documents[i]['phoneNumber'],
+                    idNo: documents[i]['idNo'],
+                    date: documents[i]['date'],
+                    department: documents[i]['office'],
+                    status: documents[i]['isApproved'],
+                    time: documents[i]['time'],
+                  );
+                } else {
+                  return UserAppointmentTile(
+                    appointmentId: documents[i]['appointmentId'],
+                    fullName: documents[i]['name'],
+                    purpose: documents[i]['purpose'],
+                    imageUrl: documents[i]['imageUrl'],
+                    phoneNumber: documents[i]['phoneNumber'],
+                    idNo: documents[i]['idNo'],
+                    date: documents[i]['date'],
+                    department: documents[i]['office'],
+                    status: documents[i]['isApproved'],
+                    time: documents[i]['time'],
+                  );
+                }
+              },
+              itemCount: documents.length,
+            ));
           }
         });
   }

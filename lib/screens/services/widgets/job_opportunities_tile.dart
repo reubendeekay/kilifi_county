@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kilifi_county/models/job_model.dart';
+import 'package:kilifi_county/models/post_models.dart';
 import 'package:kilifi_county/screens/services/job_details_screen.dart';
 
 class JobOpportunitiesTile extends StatelessWidget {
@@ -9,7 +10,7 @@ class JobOpportunitiesTile extends StatelessWidget {
   final String jobId;
   final String link;
   final String description;
-  final List<dynamic> postPics;
+  final String jobPoster;
   final String imageUrl;
 
   const JobOpportunitiesTile(
@@ -19,7 +20,7 @@ class JobOpportunitiesTile extends StatelessWidget {
       this.description,
       this.jobId,
       this.link,
-      this.postPics,
+      this.jobPoster,
       this.imageUrl});
   @override
   Widget build(BuildContext context) {
@@ -31,7 +32,7 @@ class JobOpportunitiesTile extends StatelessWidget {
             imageUrl: imageUrl,
             jobId: jobId,
             link: link,
-            postPics: postPics,
+            jobPoster: jobPoster,
             userId: userId,
             username: username,
           )),
@@ -45,12 +46,16 @@ class JobOpportunitiesTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                height: 200,
-                width: double.infinity,
-                child: Image.network(
-                  postPics.first,
-                  fit: BoxFit.fill,
+              Hero(
+                tag: jobId,
+                transitionOnUserGestures: true,
+                child: Container(
+                  height: 200,
+                  width: double.infinity,
+                  child: cachedImage(
+                    url: jobPoster,
+                    fit: BoxFit.fill,
+                  ),
                 ),
               ),
               Container(

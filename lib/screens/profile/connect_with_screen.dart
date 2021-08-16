@@ -81,7 +81,9 @@ class ConnectWithUsTile extends StatelessWidget {
       dense: true,
       onTap: () async {
         await canLaunch(link)
-            ? await launch(link)
+            ? await launch(
+                link,
+              )
             : throw 'Could not launch $title ';
       },
     );

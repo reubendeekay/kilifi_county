@@ -29,7 +29,7 @@ class Chats extends StatelessWidget {
                 .collection('messages')
                 .doc('consultation')
                 .collection(uid)
-                .orderBy('createdAt')
+                .orderBy('createdAt', descending: true)
                 .limit(50)
                 .snapshots(),
             builder: (ctx, snapshot) {
@@ -37,6 +37,7 @@ class Chats extends StatelessWidget {
                 List<DocumentSnapshot> documents = snapshot.data.docs;
 
                 return ListView(
+                  reverse: true,
                   children: documents
                       .map((e) => ChatscreenTile(Message(
                           message: e['message'],
@@ -95,6 +96,8 @@ class _AddMessageState extends State<AddMessage> {
 
   List<File> fileNames;
   List<Uint8List> files;
+  List<String> fileTypes;
+  bool isTapped = false;
 
   @override
   Widget build(BuildContext context) {
@@ -129,43 +132,62 @@ class _AddMessageState extends State<AddMessage> {
                 ],
               ),
             ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            child: TextField(
-              controller: messageController,
-              decoration: InputDecoration(
-                  border: InputBorder.none,
-                  prefixIcon: Container(
-                    margin: EdgeInsets.only(right: 10),
-                    child: GestureDetector(
-                      onTap: () async {
-                        await getFile();
-                      },
-                      child: CircleAvatar(
-                        backgroundColor: kPrimary,
-                        radius: 12,
-                        child: Icon(
-                          Icons.attachment_outlined,
-                          color: Colors.white,
+          if (!isTapped)
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: TextField(
+                controller: messageController,
+                decoration: InputDecoration(
+                    border: InputBorder.none,
+                    prefixIcon: Container(
+                      margin: EdgeInsets.only(right: 10),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            isTapped = !isTapped;
+                          });
+                        },
+                        child: Container(
+                          margin: EdgeInsets.all(10),
+                          child: FaIcon(
+                            FontAwesomeIcons.paperclip,
+                            color: Colors.grey,
+                            size: 20,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  prefixIconConstraints:
-                      BoxConstraints(minWidth: 42, minHeight: 42),
-                  suffix: GestureDetector(
-                      onTap: () async {
-                        String message = messageController.text;
+                    prefixIconConstraints:
+                        BoxConstraints(minWidth: 42, minHeight: 42),
+                    suffix: GestureDetector(
+                        onTap: () async {
+                          String message = messageController.text;
 
-                        messageController.clear();
-                        sendMessage(message, user);
-                      },
-                      child: Text('Send')),
-                  suffixStyle:
-                      TextStyle(color: kPrimary, fontWeight: FontWeight.w500)),
-              maxLines: null,
+                          messageController.clear();
+                          if (message.isNotEmpty) sendMessage(message, user);
+                        },
+                        child: Text('Send')),
+                    suffixStyle: TextStyle(
+                        color: kPrimary, fontWeight: FontWeight.w500)),
+                maxLines: null,
+              ),
             ),
-          ),
+          if (isTapped)
+            Stack(
+              children: [
+                Positioned(
+                    top: 10,
+                    right: 10,
+                    child: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            isTapped = false;
+                          });
+                        },
+                        icon: Icon(Icons.cancel))),
+                GetFileTypes(),
+              ],
+            )
         ],
       ),
     );
@@ -178,7 +200,7 @@ class _AddMessageState extends State<AddMessage> {
           .collection('interactions')
           .doc('chats')
           .collection('messages')
-          .doc(widget.isConsultation ? 'consultation' : 'customerCare')
+          .doc('consultation')
           .collection(uid)
           .doc()
           .set({
@@ -191,7 +213,7 @@ class _AddMessageState extends State<AddMessage> {
       await FirebaseFirestore.instance
           .collection('interactions')
           .doc('chats')
-          .collection(widget.isConsultation ? 'users' : 'userCare')
+          .collection('users')
           .doc(user.userId)
           .set({
         'userId': user.userId,
@@ -210,9 +232,9 @@ class _AddMessageState extends State<AddMessage> {
       await FirebaseFirestore.instance
           .collection('interactions')
           .doc('userChat')
-          .collection('users')
-          .doc(widget.toUser.userId)
-          .collection('messages')
+          .collection('chatRooms')
+          .doc('chats')
+          .collection('$user${widget.toUser}')
           .doc()
           .set({
         'message': message,
@@ -238,6 +260,7 @@ class _AddMessageState extends State<AddMessage> {
         'phoneNumber': user.phoneNumber,
         'subCounty': user.subCounty,
         'isVerified': user.isVerified,
+        'chatRoom': '$user${widget.toUser}',
         'accessedAt': Timestamp.now(),
         'latestMessage': message,
       }, SetOptions(merge: true));
@@ -258,6 +281,7 @@ class _AddMessageState extends State<AddMessage> {
         'nationalId': widget.toUser.nationalId,
         'phoneNumber': widget.toUser.phoneNumber,
         'subCounty': widget.toUser.subCounty,
+        'chatRoom': '$user${widget.toUser}',
         'isVerified': widget.toUser.isVerified,
         'accessedAt': Timestamp.now(),
         'latestMessage': message,
@@ -271,12 +295,115 @@ class _AddMessageState extends State<AddMessage> {
 
     if (result != null) {
       fileNames = result.names.map((path) => File(path)).toList();
-      result.files.forEach((element) {
-        files.add(element.bytes);
-      });
+      files = result.files.map((e) => e.bytes).toList();
+
       setState(() {});
     } else {
       // User canceled the picker
     }
+  }
+}
+
+class GetFileTypes extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    return AnimatedContainer(
+      duration: Duration(seconds: 1),
+      curve: Curves.elasticInOut,
+      height: size.height * 0.4,
+      width: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                children: [
+                  CircleAvatar(
+                    radius: 25,
+                    backgroundColor: kPrimary,
+                    child: Icon(Icons.camera_alt),
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      'Camera',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                width: 30,
+              ),
+              Column(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.red[400],
+                    child: Icon(Icons.photo),
+                    radius: 25,
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      'Gallery',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+          SizedBox(
+            height: 30,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                children: [
+                  CircleAvatar(
+                    radius: 25,
+                    child: FaIcon(
+                      FontAwesomeIcons.solidFile,
+                      size: 19,
+                    ),
+                    backgroundColor: Colors.blue,
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      'Documents',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(
+                width: 30,
+              ),
+              Column(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: kSecondary,
+                    child: Icon(Icons.audiotrack),
+                    radius: 25,
+                  ),
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 6),
+                    child: Text(
+                      'Audio',
+                      style: TextStyle(fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -10,8 +10,8 @@ import 'package:kilifi_county/providers/user_provider.dart';
 
 class Post {
   final UserModel user;
-  final String imageUrl;
-  final Uint8List imageFile;
+  final List<dynamic> imageUrl;
+  final List<Uint8List> imageFile;
   List likes;
   final String description;
   final String id;
@@ -54,27 +54,47 @@ class PostProvider with ChangeNotifier {
         .doc()
         .get();
 
-    var url;
+    List<String> urls = [];
     if (post.imageFile != null) {
-      final _imageUrl = await FirebaseStorage.instance
-          .ref('forum/posts/${id.id}')
-          .putData(post.imageFile);
-      url = await _imageUrl.ref.getDownloadURL();
+      await Future.forEach(post.imageFile, (element) async {
+        await FirebaseStorage.instance
+            .ref('forum/posts/${id.id}')
+            .putData(element)
+            .then((val) async {
+          final url = await val.ref.getDownloadURL();
+          urls.add(url);
+        });
+      }).then((value) async {
+        await FirebaseFirestore.instance.collection('posts').doc(id.id).set({
+          'userId': post.user.userId,
+          'fullName': post.user.fullName,
+          'username': post.user.username,
+          'profilePic': post.user.imageUrl,
+          'imageUrl':
+              post.imageFile != null ? FieldValue.arrayUnion(urls) : null,
+          'postId': id.id,
+          'description': post.description,
+          'comments': [],
+          'isVerified': post.user.isVerified,
+          'likes': [],
+          'createdAt': Timestamp.now(),
+        }, SetOptions(merge: true));
+      });
+    } else {
+      await FirebaseFirestore.instance.collection('posts').doc(id.id).set({
+        'userId': post.user.userId,
+        'fullName': post.user.fullName,
+        'username': post.user.username,
+        'profilePic': post.user.imageUrl,
+        'imageUrl': [],
+        'postId': id.id,
+        'description': post.description,
+        'comments': [],
+        'isVerified': post.user.isVerified,
+        'likes': [],
+        'createdAt': Timestamp.now(),
+      }, SetOptions(merge: true));
     }
-
-    await FirebaseFirestore.instance.collection('posts').doc(id.id).set({
-      'userId': post.user.userId,
-      'fullName': post.user.fullName,
-      'username': post.user.username,
-      'profilePic': post.user.imageUrl,
-      'imageUrl': post.imageFile != null ? url : null,
-      'postId': id.id,
-      'description': post.description,
-      'comments': [],
-      'isVerified': post.user.isVerified,
-      'likes': [],
-      'createdAt': Timestamp.now(),
-    }, SetOptions(merge: true));
 
     _posts.add(post);
     print(_posts[0].description);
@@ -104,7 +124,7 @@ class PostProvider with ChangeNotifier {
 
   Future<void> savePost(Post post, bool isSave) async {
     final uid = FirebaseAuth.instance.currentUser.uid;
-    isSave
+    !isSave
         ? await FirebaseFirestore.instance
             .collection('userData')
             .doc('savedPosts')
@@ -112,15 +132,7 @@ class PostProvider with ChangeNotifier {
             .doc(post.id)
             .set({
             'userId': post.user.userId,
-            'fullName': post.user.fullName,
-            'username': post.user.username,
-            'profilePic': post.user.imageUrl,
-            'imageUrl': post.imageUrl,
             'postId': post.id,
-            'description': post.description,
-            'comments': post.comments,
-            'isVerified': post.user.isVerified,
-            'likes': post.likes,
             'createdAt': Timestamp.now(),
           }, SetOptions(merge: true))
         : await FirebaseFirestore.instance

@@ -35,7 +35,7 @@ class AppointmentStatusScreen extends StatelessWidget {
               margin: EdgeInsets.symmetric(vertical: 5),
               child: Center(
                 child: Text(
-                  'Hello Reuben,',
+                  'Hello ${appointment.fullName},',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                 ),
               )),
@@ -84,7 +84,7 @@ class AppointmentStatusScreen extends StatelessWidget {
           SizedBox(
             width: size.width - 70,
             child: ElevatedButton(
-                onPressed: () async {
+                onPressed: () {
                   FirebaseFirestore.instance
                       .collection('userData')
                       .doc('appointments')

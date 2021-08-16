@@ -337,14 +337,22 @@ class _AppointmentsScreenState extends State<AppointmentsScreen> {
                           phoneNumber: phoneNumber,
                           purpose: purpose,
                           userId: user.userId);
-                      await FirebaseFirestore.instance
+                      final id = FirebaseFirestore.instance
                           .collection('admin')
                           .doc('appointments')
-                          .collection(defaultValue)
+                          .collection('requests')
                           .doc()
+                          .id;
+                      FirebaseFirestore.instance
+                          .collection('admin')
+                          .doc('appointments')
+                          .collection('requests')
+                          .doc(id)
                           .set({
                         'imageUrl': user.imageUrl,
                         'name': fullName,
+                        'username': user.username,
+                        'appointmentId': id,
                         'idNo': idNo,
                         'userId': user.userId,
                         'office': defaultValue,

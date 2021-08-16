@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 
 import 'package:kilifi_county/providers/dark_mode_provider.dart';
 import 'package:kilifi_county/providers/post_provider.dart';
@@ -29,11 +30,14 @@ import 'package:kilifi_county/screens/services/appointment_status_screen.dart';
 import 'package:kilifi_county/screens/services/appointments_screen.dart';
 import 'package:kilifi_county/screens/services/consultation_screen.dart';
 import 'package:kilifi_county/screens/services/e_citizen_screen.dart';
+import 'package:kilifi_county/screens/services/gallery_fullscree.dart';
 import 'package:kilifi_county/screens/services/gallery_screen.dart';
 import 'package:kilifi_county/screens/services/job_details_screen.dart';
 import 'package:kilifi_county/screens/services/job_oppportunities_screen.dart';
 import 'package:kilifi_county/screens/services/resource_center.dart/resource_center_screen.dart';
 import 'package:kilifi_county/screens/services/services_screen.dart';
+
+import 'package:kilifi_county/screens/userchat/rooms.dart';
 import 'package:kilifi_county/widgets/stories.dart';
 
 import 'package:provider/provider.dart';
@@ -41,6 +45,9 @@ import 'package:provider/provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  await FlutterDownloader.initialize(
+      debug: true // optional: set false to disable printing logs to console
+      );
   runApp(MyApp());
 }
 
@@ -87,10 +94,12 @@ class _MyAppState extends State<MyApp> {
             theme: Styles.themeData(themeChangeProvider.darkTheme, context),
             home: StreamBuilder(
               stream: FirebaseAuth.instance.authStateChanges(),
-              builder: (ctx, snapshot) =>
-                  snapshot.hasData ? MyNav() : AuthScreen(),
+              builder: (ctx, snapshot) => snapshot.hasData &&
+                      FirebaseAuth.instance.currentUser.emailVerified
+                  ? MyNav()
+                  : AuthScreen(),
             ),
-            // home: Gallery(),
+            // home: RoomsPage(),
             routes: {
               NewsDetailsScreen.routeName: (ctx) => NewsDetailsScreen(),
               ServicesScreen.routeName: (ctx) => ServicesScreen(),
@@ -119,6 +128,8 @@ class _MyAppState extends State<MyApp> {
               SavedPostScreen.routeName: (ctx) => SavedPostScreen(),
               PasswordResetScreen.routeName: (ctx) => PasswordResetScreen(),
               StoriesPage.routeName: (ctx) => StoriesPage(),
+              GalleryFullscreen.routeName: (ctx) => GalleryFullscreen(),
+              RoomsPage.routeName: (ctx) => RoomsPage(),
             },
           );
         }));

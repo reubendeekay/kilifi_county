@@ -54,10 +54,10 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               GestureDetector(
                 onTap: () async {
                   await FirebaseAuth.instance
-                      .sendPasswordResetEmail(email: email);
+                      .sendPasswordResetEmail(email: user.email);
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                       content: Text(
-                          'An email with the password reset request has been sent')));
+                          'An email to ${user.email} with the password reset request has been sent')));
                 },
                 child: Container(
                   margin: EdgeInsets.symmetric(horizontal: 15),
@@ -135,39 +135,46 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
         SizedBox(
           height: 55,
           child: !isEdit
-              ? Column(
-                  children: [
-                    Container(
-                      alignment: Alignment.centerLeft,
-                      margin: EdgeInsets.symmetric(vertical: 5, horizontal: 15),
-                      child: Text(
-                        placeHolder,
-                        style: TextStyle(fontSize: 13),
+              ? AnimatedContainer(
+                  duration: Duration(seconds: 1),
+                  child: Column(
+                    children: [
+                      Container(
+                        alignment: Alignment.centerLeft,
+                        margin:
+                            EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                        child: Text(
+                          placeHolder,
+                          style: TextStyle(fontSize: 13),
+                        ),
                       ),
-                    ),
-                    Container(
-                      margin: EdgeInsets.only(left: 10, right: 10),
-                      child: Divider(
-                        thickness: 1,
-                      ),
-                    )
-                  ],
+                      Container(
+                        margin: EdgeInsets.only(left: 10, right: 10),
+                        child: Divider(
+                          thickness: 1,
+                        ),
+                      )
+                    ],
+                  ),
                 )
-              : Card(
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(25)),
-                  child: Center(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 15),
-                      child: TextFormField(
-                        onChanged: (value) {
-                          variable = value;
-                        },
-                        decoration: InputDecoration(
-                            hintText: placeHolder,
-                            hintStyle: TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.w300),
-                            border: InputBorder.none),
+              : AnimatedContainer(
+                  duration: Duration(seconds: 1),
+                  child: Card(
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25)),
+                    child: Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 15),
+                        child: TextFormField(
+                          onChanged: (value) {
+                            variable = value;
+                          },
+                          decoration: InputDecoration(
+                              hintText: placeHolder,
+                              hintStyle: TextStyle(
+                                  fontSize: 13, fontWeight: FontWeight.w300),
+                              border: InputBorder.none),
+                        ),
                       ),
                     ),
                   ),

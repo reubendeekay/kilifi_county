@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -244,20 +245,20 @@ class _TopBarState extends State<TopBar> {
                     children: [
                       CircleAvatar(
                         radius: 43,
-                        backgroundImage: NetworkImage(
+                        backgroundImage: CachedNetworkImageProvider(
                           widget.user.imageUrl,
                         ),
                       ),
                       Positioned(
-                          bottom: 2,
-                          right: 4,
+                          bottom: 0,
+                          right: 2,
                           child: GestureDetector(
                             onTap: _getImage,
                             child: CircleAvatar(
-                              radius: 10,
+                              radius: 15,
                               backgroundColor: Colors.red,
                               child: Icon(
-                                Icons.edit,
+                                Icons.camera_alt,
                                 color: Colors.white,
                                 size: 13,
                               ),

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:kilifi_county/models/post_models.dart';
+import 'package:kilifi_county/screens/services/gallery_fullscree.dart';
 
 class GalleryItem extends StatefulWidget {
   final String caption;
@@ -21,19 +23,27 @@ class _GalleryItemState extends State<GalleryItem> {
   Widget build(BuildContext context) {
     final List<Widget> imageSliders = widget.images
         .map((item) => Container(
-              child: Container(
-                margin: EdgeInsets.all(5.0),
-                child: ClipRRect(
-                    borderRadius: BorderRadius.all(Radius.circular(5.0)),
-                    child: Stack(
-                      children: <Widget>[
-                        Image.network(
-                          item,
-                          fit: BoxFit.cover,
-                          width: double.infinity,
-                        )
-                      ],
-                    )),
+              child: GestureDetector(
+                onTap: () => Navigator.of(context)
+                    .pushNamed(GalleryFullscreen.routeName, arguments: {
+                  'postId': widget.postId,
+                  'caption': widget.caption,
+                  'images': widget.images
+                }),
+                child: Container(
+                  margin: EdgeInsets.all(5.0),
+                  child: ClipRRect(
+                      borderRadius: BorderRadius.all(Radius.circular(5.0)),
+                      child: Stack(
+                        children: <Widget>[
+                          cachedImage(
+                            url: item,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                          )
+                        ],
+                      )),
+                ),
               ),
             ))
         .toList();

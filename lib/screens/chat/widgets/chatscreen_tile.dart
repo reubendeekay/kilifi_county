@@ -52,7 +52,7 @@ class ChatscreenTile extends StatelessWidget {
                   bottomRight: uid == message.userId
                       ? Radius.circular(0)
                       : Radius.circular(13)),
-              color: kPrimary),
+              color: uid == message.userId ? Colors.grey : kPrimary),
         ),
       ],
     );

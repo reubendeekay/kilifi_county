@@ -1,3 +1,9 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:kilifi_county/loaders/my_loader.dart';
+
 class Comments {
   final String username;
   final String imageUrl;
@@ -39,6 +45,8 @@ class StoryModel {
   final String description;
   final String fullName;
   final String username;
+
+  final Timestamp createdAt;
   final String imageUrl;
   final List<dynamic> postPics;
   final String userId;
@@ -47,9 +55,21 @@ class StoryModel {
   StoryModel(
       {this.description,
       this.fullName,
+      this.createdAt,
       this.username,
       this.imageUrl,
       this.postPics,
       this.userId,
       this.postId});
+}
+
+Widget cachedImage({String url, BoxFit fit, double width}) {
+  return CachedNetworkImage(
+    imageUrl: url,
+    width: width,
+    fit: fit == null ? BoxFit.cover : fit,
+    progressIndicatorBuilder: (context, url, downloadProgress) =>
+        Center(child: MyLoader()),
+    errorWidget: (context, url, error) => Icon(Icons.error),
+  );
 }

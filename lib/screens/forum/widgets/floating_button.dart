@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:kilifi_county/constants.dart';
 import 'package:kilifi_county/screens/forum/add_post_screen.dart';
 import 'package:kilifi_county/screens/home/forum_screen.dart';
@@ -52,8 +53,8 @@ class FloatingButtonState extends State<FloatingButton>
   SpeedDial buildSpeedDial() {
     return SpeedDial(
       /// both default to 16
-      marginEnd: 18,
-      marginBottom: 20,
+
+      childMargin: EdgeInsets.only(left: 18, bottom: 20),
 
       icon: Icons.add,
 
@@ -80,33 +81,12 @@ class FloatingButtonState extends State<FloatingButton>
       elevation: 8.0,
       shape: CircleBorder(),
 
-      orientation: SpeedDialOrientation.Up,
-      childMarginBottom: 0,
-      childMarginTop: 0,
       gradientBoxShape: BoxShape.circle,
 
       gradient: LinearGradient(
         colors: [kPrimary, kPrimary],
       ),
       children: [
-        SpeedDialChild(
-          labelWidget: Container(
-              margin: EdgeInsets.symmetric(horizontal: 10),
-              child: Text(
-                'First',
-                style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 17,
-                    color: Colors.white),
-              )),
-          child: Icon(
-            Icons.accessibility,
-            color: kPrimary,
-          ),
-          backgroundColor: kPrimary.shade100.withOpacity(0.6),
-          onTap: () => print('FIRST CHILD'),
-          onLongPress: () => print('FIRST CHILD LONG PRESS'),
-        ),
         SpeedDialChild(
           child: Center(
               child: FaIcon(
@@ -125,7 +105,6 @@ class FloatingButtonState extends State<FloatingButton>
                     color: Colors.white),
               )),
           onTap: () => Navigator.of(context).pushNamed(AddPostScreen.routeName),
-          onLongPress: () => print('SECOND CHILD LONG PRESS'),
         ),
         SpeedDialChild(
           child: ValueListenableBuilder<List<DrishyaEntity>>(
@@ -142,8 +121,32 @@ class FloatingButtonState extends State<FloatingButton>
                   }
                   notifier.value = value;
                 },
-                onSubmitted: (list) {
+                onSubmitted: (list) async {
                   notifier.value = list;
+                  List files;
+                  list.forEach((element) async {
+                    final file =
+                        element.entity.file.then((value) => value.path);
+                    await ImageCropper.cropImage(
+                        sourcePath: await file,
+                        aspectRatioPresets: [
+                          CropAspectRatioPreset.square,
+                          CropAspectRatioPreset.ratio3x2,
+                          // CropAspectRatioPreset.original,
+                          CropAspectRatioPreset.ratio4x3,
+                          CropAspectRatioPreset.ratio16x9
+                        ],
+                        androidUiSettings: AndroidUiSettings(
+                            toolbarTitle: 'Crop',
+                            toolbarColor: Theme.of(context).primaryColor,
+                            toolbarWidgetColor: Colors.white,
+                            initAspectRatio: CropAspectRatioPreset.original,
+                            lockAspectRatio: false),
+                        iosUiSettings: IOSUiSettings(
+                          minimumAspectRatio: 1.0,
+                        ));
+                  });
+
                   if (list != null)
                     Navigator.of(context)
                         .pushNamed(AddPostScreen.routeName, arguments: list);
@@ -167,7 +170,6 @@ class FloatingButtonState extends State<FloatingButton>
                     color: Colors.white),
               )),
           onTap: () {},
-          onLongPress: () => print('THIRD CHILD LONG PRESS'),
         ),
       ],
     );

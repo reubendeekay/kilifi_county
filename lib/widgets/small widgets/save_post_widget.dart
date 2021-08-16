@@ -1,8 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:kilifi_county/constants.dart';
 import 'package:kilifi_county/providers/post_provider.dart';
-import 'package:kilifi_county/providers/user_provider.dart';
 import 'package:like_button/like_button.dart';
 import 'package:provider/provider.dart';
 
@@ -14,10 +15,23 @@ class SavePostWidget extends StatelessWidget {
     this.post,
     this.size,
   });
+  Future<bool> getPost() async {
+    final uid = FirebaseAuth.instance.currentUser.uid;
+    final get = await FirebaseFirestore.instance
+        .collection('userData')
+        .doc('savedPosts')
+        .collection(uid)
+        .doc(post.id)
+        .get();
+    if (get.exists) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final user = Provider.of<UsersProvider>(context, listen: false).user;
-
     return LikeButton(
         size: size,
         likeBuilder: (isLiked) {
@@ -31,7 +45,7 @@ class SavePostWidget extends StatelessWidget {
         },
         likeCount: null,
         onTap: (isLiked) async =>
-            await onLikeButtonTapped(isLiked, context, post));
+            await onLikeButtonTapped(await getPost(), context, post));
   }
 }
 

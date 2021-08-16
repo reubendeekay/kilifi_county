@@ -28,7 +28,7 @@ class JobOpportunitiesScreen extends StatelessWidget {
                             imageUrl: e['imageUrl'],
                             jobId: e['jobId'],
                             link: e['link'],
-                            postPics: e['postPics'],
+                            jobPoster: e['postPics'],
                             userId: e['userId'],
                             username: e['username'],
                           ))

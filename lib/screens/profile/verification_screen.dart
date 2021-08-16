@@ -1,9 +1,11 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kilifi_county/providers/user_provider.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -15,7 +17,8 @@ class VerificationScreen extends StatefulWidget {
 
 class _VerificationScreenState extends State<VerificationScreen> {
   final _formKey = GlobalKey<FormState>();
-  PlatformFile file;
+  Uint8List file;
+  String fileName;
 
   String fullName = '';
 
@@ -27,17 +30,16 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
   String link3 = '';
 
-  void pickFile() async {
-    FilePickerResult result = await FilePicker.platform.pickFiles();
+  Future<void> pickFile() async {
+    FilePickerResult result = await FilePicker.platform.pickFiles(
+      allowMultiple: false,
+      type: FileType.image,
+    );
 
     if (result != null) {
-      file = result.files.first;
-
-      print(file.name);
-      print(file.bytes);
-      print(file.size);
-      print(file.extension);
-      print(file.path);
+      file = result.files.first.bytes;
+      fileName = result.files.first.name;
+      setState(() {});
     } else {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text('No file has been chosen'),
@@ -52,30 +54,28 @@ class _VerificationScreenState extends State<VerificationScreen> {
 
     void trySubmit() async {
       if (_formKey.currentState.validate()) {
-        if (file != null) {
-          _formKey.currentState.save();
-          final send = await FirebaseStorage.instance
-              .ref('uploads/verification/${user.userId}/${file.name}')
-              .putData(file.bytes);
-          final url = send.ref.getDownloadURL();
+        _formKey.currentState.save();
+        final send = await FirebaseStorage.instance
+            .ref('uploads/verification/${user.userId}/$fileName')
+            .putData(file);
+        final url = send.ref.getDownloadURL();
 
-          await FirebaseFirestore.instance
-              .collection('admin')
-              .doc('verification_requests')
-              .collection('users')
-              .doc(user.userId)
-              .set({
-            'fullName': fullName,
-            'username': user.username,
-            'notability': notability,
-            'document': url,
-            'links': [link1, link2, link3]
-          }, SetOptions(merge: true));
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('Please upload a document'),
-          ));
-        }
+        await FirebaseFirestore.instance
+            .collection('admin')
+            .doc('verification_requests')
+            .collection('users')
+            .doc(user.userId)
+            .set({
+          'email': user.email,
+          'imageUrl': user.imageUrl,
+          'nationalID': user.nationalId,
+          'userId': user.userId,
+          'fullName': fullName,
+          'username': user.username,
+          'notability': notability,
+          'document': url,
+          'links': [link1, link2, link3]
+        }, SetOptions(merge: true));
       }
     }
 
@@ -102,7 +102,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           margin: EdgeInsets.symmetric(vertical: 15),
                           width: size.width - 80,
                           child: Text(
-                            'Verified accounts have blue checkmarks next to their names to show that they have been confirmed they are the rea presence of the public figures',
+                            'Verified accounts have blue checkmarks next to their names to show that they have been confirmed they are the real presence of the public figures',
                             textAlign: TextAlign.center,
                             style: TextStyle(color: Colors.grey, fontSize: 13),
                           ),
@@ -143,17 +143,18 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'National ID/Passport',
+                                      fileName != null
+                                          ? fileName
+                                          : 'National ID/Passport(image)',
                                       style: TextStyle(color: Colors.grey),
                                     ),
                                     if (file != null)
                                       Center(
-                                        child:
-                                            Container(child: Text(file.name)),
+                                        child: Container(child: Text(fileName)),
                                       ),
                                     Center(
                                       child: TextButton(
-                                          onPressed: pickFile,
+                                          onPressed: () async => pickFile(),
                                           child: Text(
                                             'Choose File',
                                           )),
@@ -163,7 +164,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                           ],
                         )),
                         title('Step 2: Confirm notability',
-                            'Describe in brief how you are public figure and how it represents public interest '),
+                            'Describe in brief at most 20 words how you are public figure and how it represents public interest'),
                         SizedBox(height: 10),
                         Card(
                           shape: RoundedRectangleBorder(
@@ -183,6 +184,14 @@ class _VerificationScreenState extends State<VerificationScreen> {
                                   notability = value;
                                 });
                               },
+                              maxLength: 150,
+                              buildCounter: (BuildContext context,
+                                      {int currentLength,
+                                      int maxLength,
+                                      bool isFocused}) =>
+                                  null,
+                              maxLengthEnforcement:
+                                  MaxLengthEnforcement.enforced,
                               decoration: InputDecoration(
                                   hintText: 'Short description',
                                   hintStyle: TextStyle(fontSize: 12),

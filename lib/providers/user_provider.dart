@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 class UserModel {
@@ -9,12 +10,18 @@ class UserModel {
   final String phoneNumber;
   final String subCounty;
   final String nationalId;
+  final bool isAdmin;
+  final String office;
+  final Timestamp joinedAt;
   final bool isVerified;
 
   UserModel(
       {this.email,
       this.fullName,
       this.imageUrl,
+      this.isAdmin,
+      this.joinedAt,
+      this.office,
       this.userId,
       this.username,
       this.isVerified,

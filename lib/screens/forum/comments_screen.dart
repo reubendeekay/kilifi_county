@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:kilifi_county/constants.dart';
 import 'package:kilifi_county/models/post_models.dart';
@@ -87,9 +88,14 @@ class CommentsScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: NetworkImage(post.user.imageUrl),
+              Hero(
+                tag: post.id,
+                transitionOnUserGestures: true,
+                child: CircleAvatar(
+                  radius: 20,
+                  backgroundImage:
+                      CachedNetworkImageProvider(post.user.imageUrl),
+                ),
               ),
               SizedBox(
                 width: 10,

@@ -1,7 +1,7 @@
 class NewsModel {
   final String index;
   final String fullName;
-  final List<dynamic> images;
+  final String imageUrl;
   final String profilePic;
   final String title;
   final String article;
@@ -13,7 +13,7 @@ class NewsModel {
   NewsModel(
       {this.index,
       this.fullName,
-      this.images,
+      this.imageUrl,
       this.profilePic,
       this.title,
       this.article,
